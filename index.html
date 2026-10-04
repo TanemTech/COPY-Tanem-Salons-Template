@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru" class="br-booting">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F6">
+<title>SALON NAME — цифровой офис</title>
+<meta name="description" content="Универсальный шаблон цифрового офиса салона красоты.">
+<link rel="icon" type="image/png" href="favicon-source.png">
+<link rel="shortcut icon" href="favicon-source.png">
+<link rel="apple-touch-icon" href="favicon-source.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="logo-placeholder.svg" as="image" type="image/svg+xml" fetchpriority="high">
+<link rel="preload" href="media-placeholder.svg" as="image" type="image/svg+xml" fetchpriority="high">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#FAF9F6;color:#252525;font-family:Manrope,Arial,sans-serif}
+#brBootIntro{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:#FAF9F6;opacity:1;transition:opacity .24s ease;pointer-events:auto}
+#brBootIntro img{display:block;width:min(50vw,220px);height:auto;max-height:38svh;object-fit:contain}
+html[data-br-device="desktop"] #brBootIntro{transition:opacity .40s cubic-bezier(.22,1,.36,1)}
+html[data-br-device="desktop"] #brBootIntro img{width:min(75vw,330px);max-height:48svh}
+#brBootIntro.has-client-logo img{width:min(70vw,308px);max-height:53.2svh}
+html[data-br-device="desktop"] #brBootIntro.has-client-logo img{width:min(90vw,462px);max-height:67.2svh}
+#brBootIntro .br-intro-name{display:block;max-width:calc(100vw - 48px);margin:0;text-align:center;text-transform:uppercase;overflow-wrap:anywhere}
+#brBootIntro .br-intro-name.is-mobile{font:500 clamp(50.96px,12.74vw,116.48px)/.92 "Cormorant Garamond",Georgia,serif;letter-spacing:.16em;padding:24px 24px 24px calc(24px + .16em)}
+#brBootIntro .br-intro-name.is-desktop{font:500 clamp(50.96px,12.74vw,116.48px)/.84 "Cormorant Garamond",Georgia,serif;letter-spacing:.105em;padding:24px 24px 24px calc(24px + .105em)}
+#brBootIntro.is-exiting{opacity:0;pointer-events:none}
+html.br-booting #salon-mobile,html.br-booting #salon-desktop-v1{visibility:hidden!important}
+#brLoadError{display:none;min-height:100svh;padding:32px;place-items:center;text-align:center}
+#brLoadError.is-visible{display:grid}
+#brLoadError a{display:inline-block;margin-top:22px;color:#181818}
+@media(prefers-reduced-motion:reduce){#brBootIntro{transition:none!important}}
+</style>
+<link rel="stylesheet" href="desktop.css?v=salon-20261003-v2" media="(hover:hover) and (pointer:fine), (min-width:1024px)">
+<link rel="stylesheet" href="salon-palette.css?v=salon-20261003-v2" media="(hover:hover) and (pointer:fine), (min-width:1024px)">
+<script src="site-data.js?v=salon-20261003-v1"></script>
+<script src="site-regions.js?v=salon-final-20260928-v2"></script>
+<script>
+(()=>{
+ const desktop=!!(window.matchMedia&&(matchMedia('(hover:hover) and (pointer:fine)').matches||matchMedia('(min-width:1024px)').matches));
+ window.__BR_DESKTOP_DEVICE__=desktop;
+ document.documentElement.dataset.brDevice=desktop?'desktop':'mobile';
+ if(!desktop){
+  const css=document.createElement('link');
+  css.rel='stylesheet';
+  css.href='mobile.css?v=safe-clean-20260929-v1';
+  document.head.appendChild(css);
+  const preload=document.createElement('link');
+  preload.rel='preload';
+  preload.as='style';
+  preload.href='mobile-overrides.css?v=salon-20261003-v5';
+  const palettePreload=document.createElement('link');
+  palettePreload.rel='preload';
+  palettePreload.as='style';
+  palettePreload.href='salon-palette.css?v=salon-20261003-v2';
+  document.head.appendChild(palettePreload);
+  document.head.appendChild(preload);
+ }
+})()
+</script>
+</head>
+<body>
+<div id="brBootIntro" role="status" aria-label="SALON NAME"><img src="logo-placeholder.svg" alt="Логотип салона" width="220" height="220" decoding="sync" fetchpriority="high"></div>
+<main id="brLoadError" role="alert"><div><strong>SALON NAME</strong><p>Не удалось загрузить страницу. Проверьте подключение к интернету.</p><a href="" onclick="location.reload();return false">Повторить</a></div></main>
+<script>window.SALON_REVIEWS=[];</script>
+<script>
+(()=>{
+ const started=performance.now(),desktop=window.__BR_DESKTOP_DEVICE__===true;
+ const id=desktop?'salon-desktop-v1':'salon-mobile';
+ const intro=document.getElementById('brBootIntro'),error=document.getElementById('brLoadError');
+ const site=window.TANEM_SITE_DATA;
+ if(site?.mode==='production'){
+   const name=(site.salon?.name?.ru||site.salon?.name?.en||site.salon?.name||'TANEM');
+   const logo=intro.querySelector('img');
+   if(site.media?.logo){intro.classList.add('has-client-logo');logo.src=site.media.logo;logo.alt=name;}
+   else if(logo){const text=document.createElement('strong');text.className='br-intro-name '+(desktop?'is-desktop':'is-mobile');text.textContent=name;logo.replaceWith(text);}
+ }
+ let closed=false,shown=false,readyTimer=0;
+ function showApp(){
+   const root=document.getElementById(id);
+   if(!root){error.classList.add('is-visible');return false}
+   if(!shown){
+     shown=true;error.classList.remove('is-visible');
+     if(desktop)root.classList.add('desktop-ready');
+     document.documentElement.classList.remove('br-booting');
+     window.dispatchEvent(new Event('br:intro-done'));
+   }
+   return true;
+ }
+ function finish(){
+   if(closed)return;
+   closed=true;clearTimeout(readyTimer);showApp();
+   intro.classList.add('is-exiting');
+   window.setTimeout(()=>intro.remove(),desktop?420:250);
+ }
+ // The entire splash including its fade is limited to 2 seconds.
+ window.setTimeout(finish,desktop?1560:1730);
+ function loaded(){
+   if(closed){showApp();return}
+   const root=document.getElementById(id);
+   if(!root)return;
+   const img=root.querySelector(desktop?'#stdHeroMedia':'.br-video-media img');
+   const ready=()=>{const ms=Math.max(0,850-(performance.now()-started));readyTimer=window.setTimeout(finish,ms)};
+   if(img&&img.tagName==='IMG'&&!img.complete){
+     img.addEventListener('load',ready,{once:true});
+     img.addEventListener('error',ready,{once:true});
+   }else ready();
+ }
+ const script=document.createElement('script');
+ script.src=desktop?'desktop.js?v=salon-20261003-v1':'mobile.js?v=salon-20261003-v2';
+ script.async=false;script.onload=()=>{
+   const runtime=document.createElement('script');
+   runtime.src='site-runtime.js?v=salon-20261003-v5';
+   runtime.async=false;runtime.onload=loaded;
+   runtime.onerror=()=>{if(closed)error.classList.add('is-visible')};
+   document.body.appendChild(runtime);
+ };
+ script.onerror=()=>{if(closed)error.classList.add('is-visible')};
+ document.body.appendChild(script);
+})();
+</script>
+<noscript><p style="padding:32px;text-align:center">Для работы сайта требуется JavaScript.</p></noscript>
+</body>
+</html>

@@ -1,0 +1,575 @@
+
+@media(max-width:1023px){
+:root{--salon-template-white:#fafaf9;--salon-template-soft:#f2f2f0;--salon-template-menu:#f5f5f3;--salon-template-ink:#181818;--salon-template-dark:#242424;--salon-template-mid:#e8e8e6}
+html,body,#salon-mobile{background:var(--salon-template-white)!important;color:var(--salon-template-ink)!important}
+#salon-mobile .tn13-hero,.tn22-card{background:var(--salon-template-white)!important}
+.tn22-top{background:var(--salon-template-menu)!important;border-bottom:1px solid rgba(24,24,24,.06)!important}
+.tn22-navpop{background:rgba(245,245,243,.98)!important;border-color:rgba(24,24,24,.10)!important;box-shadow:0 18px 44px rgba(0,0,0,.10)!important}
+.tn22-navpop a{border-color:rgba(24,24,24,.08)!important;color:var(--salon-template-ink)!important}
+body[data-br-lang="en"] #salon-mobile .tn22-navpop{width:236px!important;padding:8px 13px!important;grid-auto-rows:44px!important}
+body[data-br-lang="en"] #salon-mobile .tn22-navpop a{min-height:44px!important;height:44px!important;display:flex!important;align-items:center!important;margin:0!important;padding:0 4px!important}
+.tn23-section-nav{background:rgba(245,245,243,.96)!important;border-color:rgba(24,24,24,.09)!important;box-shadow:0 8px 26px rgba(0,0,0,.06)!important}
+.tn22-cta{position:relative!important;overflow:hidden!important;background:var(--salon-template-ink)!important;border-color:var(--salon-template-ink)!important;color:#fff!important;box-shadow:0 10px 25px rgba(0,0,0,.14)!important}
+.tn22-cta:after{content:""!important;position:absolute!important;top:-35%!important;bottom:-35%!important;left:-42%!important;width:30%!important;background:linear-gradient(100deg,transparent,rgba(255,255,255,.38),transparent)!important;transform:skewX(-20deg)!important;animation:salonTemplateBookSheen 4.4s ease-in-out infinite!important;pointer-events:none!important}
+@keyframes salonTemplateBookSheen{0%,66%{left:-42%;opacity:0}72%{opacity:1}90%{left:126%;opacity:1}91%,100%{left:126%;opacity:0}}
+.tn22-worklink{background:var(--salon-template-mid)!important;border-color:#d2d2cf!important;color:var(--salon-template-ink)!important;box-shadow:none!important}
+.tn50-hero-status.open .tn50-hero-status-main{color:#2f7d46!important}.tn50-hero-status.closed .tn50-hero-status-main{color:#c54b55!important}
+#tn13Portfolio{background:var(--salon-template-white)!important;color:var(--salon-template-ink)!important}
+#tn13Gallery,#tn13Gallery .tn22-gallery{background:var(--salon-template-soft)!important;color:var(--salon-template-ink)!important}
+#tn13Gallery .tn22-gallery-tabs{background:var(--salon-template-soft)!important;border-color:rgba(24,24,24,.12)!important}
+#tn13Gallery .tn22-gallery-tab{color:#595959!important}#tn13Gallery .tn22-gallery-tab.active{background:var(--salon-template-ink)!important;color:#fff!important}
+#tn13Services,#tn13Team,#tn13Visit{background:var(--salon-template-dark)!important;color:#f7f7f6!important;border-color:rgba(255,255,255,.08)!important}
+#tn13Services .tn31-cat.active{background:#f3f3f1!important;border-color:#f3f3f1!important;color:#181818!important}
+#tn13Services .tn31-service-name,#tn13Services .tn31-service-price,#tn13Services h2,#tn13Team h2,#tn13Visit h2{color:#f7f7f6!important}
+#tn13Services .tn31-service-detail,#tn13Services .tn22-kicker,#tn13Team .tn22-kicker,#tn13Visit .tn22-kicker{color:#bdbdbb!important}
+#tn13Services .tn31-service-list,#tn13Services .tn31-service-row{border-color:rgba(255,255,255,.14)!important}
+#tn13Team .tn22-master-circle{background:linear-gradient(145deg,#3a3a3a,#202020)!important;color:#e5e5e5!important;border-color:rgba(255,255,255,.10)!important}
+#tn13Reviews{background:var(--salon-template-soft)!important;color:var(--salon-template-ink)!important}
+#tn13Reviews .tn30-review-card{background:rgba(255,255,255,.34)!important;border-color:rgba(66,55,49,.15)!important}
+#tn13Reviews .tn30-review-avatar{background:#dededc!important;color:#404040!important}#tn13Reviews .tn30-stars{color:#444!important}
+#tn13Visit .tn22-contact{background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.13)!important;color:#f7f7f6!important}
+#tn13Visit .tn22-contact-icon{background:rgba(255,255,255,.08)!important;border-color:rgba(255,255,255,.08)!important}
+#tn13Visit .tn22-contact-icon svg{stroke:#ededeb!important}#tn13Visit .tn22-contact strong{color:#f7f7f6!important}#tn13Visit .tn22-contact>span:last-child>span{color:#bebebb!important}
+#tn13Visit .tn22-status.open{background:#203b2a!important;border-color:#315b40!important;color:#8fd0a1!important}#tn13Visit .tn22-status.closed{background:#46292e!important;border-color:#63383f!important;color:#ef9ea7!important}
+#tn13Visit .tn22-mapwrap{background:#333!important;border:1px solid rgba(255,255,255,.10)!important}#tn13Visit .tn22-route{background:#ededeb!important;color:#202020!important}#tn13Visit .tn22-footer{background:#181818!important}
+#tn38About{background:#f7f2eb!important;color:#181818!important}#tn38About .tn42-card{background:#e7ded5!important;box-shadow:0 14px 34px rgba(47,37,31,.08)!important;border-color:rgba(66,55,49,.14)!important}#tn38About .tn42-photo{background:#f2f2f0!important}.tn37-info-icon{color:#555!important;border-color:rgba(24,24,24,.12)!important}.tn37-info-copy{color:#555!important}
+#tn38About .tn42-photo img{object-position:center 38%!important}
+.tn22-gallery-title span,.tn42-kicker,.tn22-kicker{color:#696969}
+
+/* Approved monochrome/mobile refinements; maintained within the existing theme. */
+#salon-mobile #tn13Top{background:#fafaf9!important;border-bottom:0!important;box-shadow:none!important}
+#salon-mobile #tn13Top .tn22-card{background:#FAF8F4!important}
+#salon-mobile #tn13Top .tn22-media.br-video-media:after{background:linear-gradient(180deg,rgba(250,250,249,0),rgba(250,250,249,.38) 45%,#fafaf9 96%)!important}
+#salon-mobile #tn13Reviews{background:#e9e2da!important;border-color:rgba(24,24,24,.07)!important}
+#salon-mobile #tn13Reviews .br-review-card{background:rgba(255,255,255,.34)!important;border-color:rgba(66,55,49,.15)!important}
+#salon-mobile #tn13Reviews .br-review-card p{color:#393939!important}
+#salon-mobile #tn13Reviews .br-review-avatar{background:#d7cec6!important;color:#514943!important;border-color:rgba(66,55,49,.10)!important}
+#salon-mobile #tn13Services .tn31-service-row:active{transform:translateY(1px)}
+#salon-mobile #tn13Services .tn31-service-name{font:500 16.5px/1.15 'Cormorant Garamond',Georgia,serif!important}
+#salon-mobile #tn13Services .tn31-service-detail{color:#bdbdbd!important;font:400 9px/1.3 Manrope,Arial,sans-serif!important}
+#salon-mobile #tn13Services .tn31-service-price{font:600 13px/1 Manrope,Arial,sans-serif!important}
+#salon-mobile #tn13Services .tn31-cat.active{background:#f3f3f1!important;border-color:#f3f3f1!important;color:#181818!important}
+#salon-mobile #tn13Team .tn22-master-name{color:#f5f5f5!important;white-space:normal!important}
+#salon-mobile #tn13Team .tn22-master-role{display:block!important;color:#bebebe!important}
+#salon-mobile #tn38About .tn42-photo{overflow:hidden!important}
+#salon-mobile #tn38About .tn42-photo img.br-about-image{height:calc(100% + 1cm)!important;max-height:none!important;transform:translateY(-1cm)!important;object-position:center 38%!important}
+#salon-mobile #tn13Sticky{left:50%!important;right:auto!important;width:min(calc(100% - 20px),500px)!important;max-width:500px!important;background:rgba(232,232,230,.97)!important;border-color:rgba(24,24,24,.13)!important;box-shadow:0 12px 32px rgba(0,0,0,.14)!important;color:#181818!important}
+#salon-mobile #tn13Sticky:not(.show){transform:translate(-50%,150%)!important}
+#salon-mobile #tn13Sticky.show{transform:translate(-50%,0)!important}
+#salon-mobile #tn13Sticky strong{color:#181818!important}
+#salon-mobile #tn13Sticky button{background:#181818!important;border-color:#181818!important}
+#salon-mobile #tn13BookSheet.open{background:rgba(12,12,12,.72)!important}
+#salon-mobile #tn13BookSheet .tn13-panel,#salon-mobile #tn13BookSheet.open .tn13-panel{background:#fafaf9!important;color:#181818!important;box-shadow:0 -16px 60px rgba(0,0,0,.28)!important}
+#salon-mobile #tn13BookSheet .tn50-book-option{background:#f2f2f0!important;border-color:rgba(24,24,24,.12)!important;color:#181818!important}
+#salon-mobile #tn13BookSheet .tn50-book-option:active{background:#e5e5e3!important}
+#salon-mobile #tn13BookSheet .tn50-book-icon{background:#e8e8e6!important;color:#202020!important}
+#salon-mobile #tn13BookSheet .tn50-book-arrow{color:#202020!important}
+#salon-mobile #tn13BookSheet .tn13-close{background:#e8e8e6!important;color:#181818!important}
+#salon-mobile #tn13Gallery{background:radial-gradient(430px 300px at 108% 2%,rgba(139,113,103,.13),transparent 68%),#2f2926!important;color:#f7f3f0!important}
+#salon-mobile #tn13Gallery .tn22-gallery{background:transparent!important;color:#f7f3f0!important;min-height:100dvh!important;padding:24px 18px 110px!important}
+#salon-mobile #tn13Gallery .tn22-gallery-back{color:#fff!important}
+#salon-mobile #tn13Gallery .tn22-gallery-title strong{color:#f7f3f0!important}
+#salon-mobile #tn13Gallery .tn22-gallery-title span{color:#b9ada7!important}
+#salon-mobile #tn13Gallery .tn22-gallery-tabs-wrap{position:sticky!important;top:0!important;z-index:45!important;margin:26px -18px 0!important;padding:8px 18px!important;background:rgba(47,41,38,.97)!important;backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important;box-shadow:0 9px 24px rgba(0,0,0,.12)!important}
+#salon-mobile #tn13Gallery .tn22-gallery-tabs{display:flex!important;margin:0!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:14px!important;overflow-x:auto!important}
+#salon-mobile #tn13Gallery .tn22-gallery-tab{height:43px!important;padding:0 18px!important;border:0!important;background:transparent!important;color:#cbc1bc!important;font:500 11px/1 Manrope,Arial,sans-serif!important;box-shadow:none!important}
+#salon-mobile #tn13Gallery .tn22-gallery-tile{background:#3a322e!important;border-radius:11px!important}
+#salon-mobile #tn13Gallery .tn22-gallery-grid{grid-template-columns:1fr 1fr!important;gap:7px!important;margin-top:18px!important}
+#salon-mobile #tn13Gallery .tn22-gallery-tabs{background:transparent!important}
+#salon-mobile #tn13Gallery .tn22-gallery-tab.active{background:#8b7167!important;color:#fff!important}
+
+#salon-mobile .tn22-cta:active{background:#654f48!important;border-color:#654f48!important}
+#salon-mobile .tn22-worklink:active{background:#DDC9B8!important;color:#49362D!important;border-color:#C7AD99!important}
+#salon-mobile #tn13BookSheet .tn50-book-copy{color:#555!important}
+#salon-mobile #tn13Visit .br-tanem-mark{background:#181818!important;border-color:rgba(255,255,255,.25)!important}
+
+
+/* Approved mobile adjustments, placed in the established neutral theme. */
+html{background:linear-gradient(to bottom,#fafaf9 0%,#fafaf9 58%,#181818 100%)!important}
+#salon-mobile #tn13Top{background:#f8f4ee!important;border-bottom:0!important;box-shadow:none!important}
+#salon-mobile #tn13Top .tn22-card{bottom:0!important;background:linear-gradient(180deg,#f8f4ee 0%,#f8f4ee 82%,rgba(248,244,238,0) 100%)!important;border:0!important;box-shadow:none!important;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 84%,transparent 100%)!important;mask-image:linear-gradient(to bottom,#000 0%,#000 84%,transparent 100%)!important}
+#salon-mobile #tn13Top .tn22-media.br-video-media:after{background:linear-gradient(180deg,rgba(248,244,238,0),rgba(248,244,238,.42) 43%,#f8f4ee 96%)!important}
+#salon-mobile #tn13Portfolio{position:relative!important;margin-top:-1px!important;border-top:0!important;box-shadow:none!important;background:#f7f2eb!important;overflow:visible!important;isolation:isolate!important}
+#salon-mobile #tn13Portfolio:before{content:''!important;position:absolute!important;z-index:0!important;left:-10px!important;right:-10px!important;top:-42px!important;height:122px!important;pointer-events:none!important;background:linear-gradient(180deg,rgba(250,248,244,.98) 0%,rgba(250,248,244,.90) 26%,rgba(250,248,244,.64) 52%,rgba(250,248,244,.30) 74%,rgba(250,248,244,0) 100%)!important;filter:blur(7px)!important;transform:translateZ(0)!important}
+#salon-mobile #tn13Portfolio .tn22-port{position:relative!important;z-index:1!important}
+#salon-mobile #tn13Sticky button{height:46px!important;padding:0 24px!important;background:#171513!important;color:#fff!important;font-size:12px!important}
+#salon-mobile #tn13Sticky button:active{transform:translateY(1px) scale(.992)!important;background:#332b27!important}
+#salon-mobile #tn13Top .tn22-cta{background:#715b53!important;border-color:#715b53!important;color:#fff!important}
+#salon-mobile #tn13Top .tn22-cta:active{transform:translateY(1px) scale(.992)!important;background:#654f48!important}
+#salon-mobile #tn13Portfolio .tn22-port-all:active{transform:translateY(2px) scale(.988)!important;background:#715b53!important;color:#fff!important;border-color:#715b53!important}
+#tn38About .tn42-body{background:#e7ded5!important}
+#salon-mobile #tn13Portfolio:before{background:linear-gradient(180deg,#f8f4ee,rgba(247,242,235,0))!important}
+#salon-mobile #tn13Top .tn22-worklink{backdrop-filter:blur(9px)!important;-webkit-backdrop-filter:blur(9px)!important}
+#salon-mobile #tn13Top .tn22-top{background:#f8f4ee!important}
+#salon-mobile #tn13Portfolio .tn22-port-all{background:#efe7e1!important;border-color:rgba(113,91,83,.38)!important;color:#2f2926!important;backdrop-filter:blur(9px)!important;-webkit-backdrop-filter:blur(9px)!important}
+#salon-mobile #tn13Reviews .br-stars,#salon-mobile #tn13Reviews .br-review-meta-stars{color:#E4AD35!important}
+#salon-mobile #tn13Top .tn22-worklink{display:flex!important;min-height:48px!important;background:#efe7e1!important;border:1px solid rgba(113,91,83,.38)!important;color:#2f2926!important;box-shadow:0 6px 18px rgba(0,0,0,.10)!important;font-size:13px!important}
+#salon-mobile #tn13Top .tn22-worklink:active{background:#715b53!important;color:#fff!important;border-color:#715b53!important}
+@media(hover:hover){#salon-mobile #tn13Top .tn22-worklink:hover{background:#715b53!important;color:#fff!important;border-color:#715b53!important}}
+#salon-mobile #tn13Services .tn31-services{padding:32px 25px 40px!important}
+#salon-mobile #tn13Services .tn31-service-list{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:9px!important;width:calc(100% + 30px)!important;margin:18px -15px 0!important;border:0!important;padding:0!important;box-sizing:border-box!important}
+#salon-mobile #tn13Services .tn31-service-row{grid-template-columns:minmax(0,1fr) auto!important;gap:11px!important;border:1px solid rgba(255,255,255,.11)!important;border-radius:11px!important;background:rgba(255,255,255,.055)!important;color:#f7f7f6!important;text-align:left!important;box-shadow:none!important;transition:background .18s ease,transform .18s ease!important}
+#salon-mobile #tn13Services .tn31-service-row:active{background:rgba(255,255,255,.12)!important;transform:translateY(1px)!important}
+#salon-mobile #tn13Services .tn31-service-side{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:7px!important;min-width:0!important;max-width:170px!important;margin:0!important;padding:0!important;text-align:right!important;flex-wrap:wrap!important}
+#salon-mobile #tn13Services .tn31-service-time{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:24px!important;padding:2px 7px!important;border:1px solid rgba(255,255,255,.13)!important;border-radius:999px!important;background:rgba(255,255,255,.10)!important;color:#dedede!important;font:600 9.5px/1 Manrope,Arial,sans-serif!important;white-space:nowrap!important}
+#salon-mobile #tn13Services .tn31-service-price{flex:0 0 auto!important}
+@media(max-width:370px){#salon-mobile #tn13Services .tn31-service-row{padding:11px 13px!important;gap:8px!important}#salon-mobile #tn13Services .tn31-service-side{gap:5px!important;max-width:143px!important}#salon-mobile #tn13Services .tn31-service-time{font-size:9px!important;padding-inline:5px!important}}
+#salon-mobile #tn13Team,#salon-mobile #tn13Team .tn22-team{overflow:visible!important}
+#salon-mobile #tn13Team .tn22-team-grid{display:flex!important;grid-template-columns:none!important;gap:14px!important;margin:30px -28px 0!important;padding:0 28px 10px!important;overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-x:contain!important;touch-action:pan-x pan-y!important;scroll-snap-type:x proximity!important;scroll-padding-left:28px!important;scroll-padding-right:28px!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important}
+#salon-mobile #tn13Team .tn22-team-grid::-webkit-scrollbar{display:none!important}
+#salon-mobile #tn13Team .tn22-master-card{flex:0 0 136px!important;width:136px!important;min-width:136px!important;scroll-snap-align:start!important;overflow:visible!important}
+#salon-mobile #tn13BookSheet .tn50-book-icon,#salon-mobile #tn13BookSheet .tn50-book-icon.phone,#salon-mobile #tn13BookSheet .tn50-book-icon.viber-generic{background:#e1e1df!important;color:#181818!important;border:1px solid rgba(24,24,24,.08)!important}
+#salon-mobile #tn13BookSheet .tn50-book-icon.phone svg,#salon-mobile #tn13BookSheet .tn50-book-icon.viber-generic svg{stroke:currentColor!important;color:#181818!important}
+#salon-mobile #tn13BookSheet .tn13-kicker,#salon-mobile #tn13BookSheet .tn50-book-title,#salon-mobile #tn13BookSheet .tn50-book-option strong{color:#181818!important}
+#salon-mobile #tn13BookSheet .tn13-close:active{background:#d9d9d7!important}
+#salon-mobile #tn38About .tn42-card,#salon-mobile #tn38About .tn42-body{background:#eee7df!important;border-color:rgba(66,55,49,.12)!important}
+#salon-mobile .tn22-master-page{background:#f2f2f0!important}
+#salon-mobile #tn38About .tn42-fact{background:#f3f3f1!important;color:#181818!important;border-color:rgba(24,24,24,.10)!important}
+#salon-mobile #tn13Visit{background:#242424!important}
+#salon-mobile #tn13Visit .tn22-footer{background:#181818!important}
+/* Mobile-only: use the portfolio's warm light tone in place of white accents. */
+#salon-mobile #tn13Services .tn31-cat.active{background:#f7f2eb!important;border-color:#f7f2eb!important;color:#181818!important}
+#salon-mobile #tn13Services .tn22-kicker,#salon-mobile #tn13Services h2{color:#f7f2eb!important}
+#salon-mobile #tn38About .tn42-fact{background:#f7f2eb!important;border-color:rgba(66,55,49,.12)!important}
+#salon-mobile #tn13Team .tn22-kicker,#salon-mobile #tn13Team h2,#salon-mobile #tn13Team .tn22-master-name{color:#f7f2eb!important}
+#salon-mobile #tn13Team .tn22-master-circle{background:linear-gradient(145deg,#3a3a3a,#202020)!important;color:#e5e5e5!important;border-color:rgba(255,255,255,.10)!important}
+#salon-mobile #tn13Visit .tn22-kicker,#salon-mobile #tn13Visit h2,#salon-mobile #tn13Visit .tn22-contact strong{color:#f7f2eb!important}
+#salon-mobile #tn13Visit .tn22-contact>span:last-child>span{color:#d5c9bf!important}
+#salon-mobile #tn13Visit .tn22-contact-icon{background:rgba(247,242,235,.13)!important;border-color:rgba(247,242,235,.20)!important}
+#salon-mobile #tn13Visit .tn22-contact-icon svg{stroke:#d5c3b4!important;color:#d5c3b4!important}
+#salon-mobile #tn13Visit .tn22-route{background:#f7f2eb!important;color:#2f2926!important}
+#salon-mobile #tn13Sticky{grid-template-columns:minmax(0,1fr) minmax(154px,44%)!important}
+#salon-mobile #tn13Sticky button{padding-inline:20px!important}
+@media(max-width:360px){#salon-mobile #tn13Sticky{grid-template-columns:minmax(0,1fr) minmax(142px,43%)!important}#salon-mobile #tn13Sticky button{min-width:142px!important;padding-inline:12px!important}}
+
+
+}
+@media(prefers-reduced-motion:reduce){.tn22-cta:after{animation:none!important}}
+
+@media(max-width:1023px){
+ #salon-mobile #tn13Sticky{box-sizing:border-box!important;display:grid!important;grid-template-columns:minmax(0,1fr) max-content!important;align-items:center!important;gap:8px!important;padding:7px 7px 7px 12px!important;overflow:hidden!important}
+ #salon-mobile #tn13Sticky>span{min-width:0!important;overflow-wrap:anywhere!important}
+ #salon-mobile #tn13Sticky button{padding-inline:clamp(11px,3.5vw,18px)!important;white-space:nowrap!important}
+ body[data-br-lang="hy"] #salon-mobile :is(h1,h2,h3,p,a,button,span,strong,small){font-weight:400!important}
+ body[data-br-lang="hy"] #salon-mobile #tn13Services .tn31-service-name{font-weight:400!important}
+ body[data-br-lang="hy"] #salon-mobile #tn13Sticky strong{font-size:clamp(10px,2.5vw,12px)!important;line-height:1.25!important;letter-spacing:-.03em!important;white-space:normal!important}
+}
+
+/* Existing mobile categories: align first pill with first service card, no extra row. */
+@media(max-width:1023px){
+#salon-mobile #tn13Services .tn31-cats:before{flex:0 0 2px!important;width:2px!important}
+#salon-mobile #tn13Services .tn31-cats{scroll-snap-type:none!important;scroll-behavior:auto!important}
+}
+@media(max-width:370px){
+#salon-mobile #tn13Services .tn31-cats{margin-left:-5px!important;width:calc(100% + 5px)!important}
+}
+
+/* One fixed time/price rail for all mobile services; compact copy expands independently. */
+/* Move both complete side rails 3 mm right without changing their internal 44px time column. */
+#salon-mobile #tn13Services .tn31-service-row:not(.tn31-service-demo) .tn31-service-side{transform:translateX(11.34px)!important}
+@media(max-width:1023px){
+ #salon-mobile #tn13Services .tn31-service-row{
+  position:relative!important;display:grid!important;
+  grid-template-columns:minmax(0,1fr) 148px!important;
+  column-gap:8px!important;align-items:center!important;
+  min-height:68px!important;padding:8px 12px!important;
+  width:100%!important;box-sizing:border-box!important;
+ }
+ #salon-mobile #tn13Services .tn31-service-copy{
+  display:block!important;width:100%!important;min-width:0!important;padding:0!important
+ }
+ #salon-mobile #tn13Services .tn31-service-name{
+  display:block!important;max-width:100%!important;min-width:0!important;
+  -webkit-line-clamp:unset!important;overflow:visible!important;
+  white-space:normal!important;overflow-wrap:anywhere!important;hyphens:auto!important;
+  font:500 clamp(15px,4.25vw,17px)/1.14 "Cormorant Garamond","Manrope",Georgia,serif!important
+ }
+ #salon-mobile #tn13Services .tn31-service-side{
+  display:grid!important;grid-template-columns:44px minmax(0,1fr)!important;
+  column-gap:7px!important;row-gap:0!important;align-items:center!important;
+  justify-content:stretch!important;flex-wrap:nowrap!important;
+  width:148px!important;min-width:148px!important;max-width:148px!important;
+  margin:0!important;padding:0!important;align-self:center!important;
+  text-align:center!important
+ }
+ #salon-mobile #tn13Services .tn31-service-time{
+  grid-column:1!important;grid-row:1!important;justify-self:center!important;
+  align-self:center!important;min-width:0!important;min-height:25px!important;
+  padding:3px 6px!important;margin:0!important;white-space:nowrap!important;
+  font:600 10px/1.1 "Manrope",Arial,sans-serif!important
+ }
+ #salon-mobile #tn13Services .tn31-service-price{
+  grid-column:2!important;grid-row:1!important;justify-self:end!important;
+  align-self:center!important;display:block!important;min-width:0!important;max-width:100%!important;
+  margin:0!important;font:600 clamp(11px,3.55vw,14px)/1.15 "Manrope",Arial,sans-serif!important;
+  color:#f7f7f6!important;text-align:right!important;
+  white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important;
+  font-variant-numeric:tabular-nums!important
+ }
+ #salon-mobile #tn13Services .tn31-service-range-price{
+  display:grid!important;grid-template-columns:max-content 14px!important;
+  grid-template-rows:auto 7px auto!important;
+  column-gap:2px!important;align-items:center!important;justify-content:end!important;
+  width:100%!important;max-width:100%!important;box-sizing:border-box!important;
+  padding-right:8px!important;
+  font:600 clamp(11px,3.55vw,14px)/1.05 "Manrope",Arial,sans-serif!important;
+ }
+ #salon-mobile #tn13Services .tn31-price-low{grid-column:1!important;grid-row:1!important}
+ #salon-mobile #tn13Services .tn31-price-divider{
+  grid-column:1!important;grid-row:2!important;justify-self:center!important;
+  font:400 11px/7px "Manrope",Arial,sans-serif!important
+ }
+ #salon-mobile #tn13Services .tn31-price-high{grid-column:1!important;grid-row:3!important}
+ #salon-mobile #tn13Services .tn31-price-symbol{
+  grid-column:2!important;grid-row:1/4!important;justify-self:center!important;
+  align-self:center!important;width:14px!important;text-align:right!important;font:inherit!important
+ }
+ #salon-mobile #tn13Services .tn31-service-single-price{
+  display:flex!important;align-items:baseline!important;justify-content:flex-end!important;
+  gap:2px!important;width:100%!important;min-width:0!important;
+  box-sizing:border-box!important;padding-right:8px!important;
+  white-space:nowrap!important;font:600 clamp(11px,3.55vw,14px)/1.15 "Manrope",Arial,sans-serif!important
+ }
+ #salon-mobile #tn13Services .tn31-money-prefix{
+  display:inline!important;flex:0 0 auto!important;font-size:10px!important;
+  line-height:1!important;font-weight:500!important
+ }
+ #salon-mobile #tn13Services .tn31-money-amount{display:inline!important;flex:0 0 auto!important;font:inherit!important}
+ #salon-mobile #tn13Services .tn31-money-symbol{
+  display:inline-block!important;flex:0 0 14px!important;width:14px!important;
+  text-align:right!important;font:inherit!important
+ }
+ #salon-mobile #tn13Services .tn31-service-row.tn31-service-demo{
+  display:grid!important;grid-template-columns:minmax(0,1fr) 148px!important;
+  grid-template-rows:auto auto!important;column-gap:8px!important;row-gap:0!important;
+  align-items:start!important;min-height:68px!important;padding:8px 12px!important
+ }
+ #salon-mobile #tn13Services .tn31-service-demo .tn31-service-primary{
+  grid-column:1!important;grid-row:1!important;display:block!important;
+  width:100%!important;min-width:0!important;min-height:0!important;height:auto!important;
+  margin:0!important;padding:0!important;border:0!important;
+  background:transparent!important;box-shadow:none!important;
+  color:inherit!important;text-align:left!important;font:inherit!important;cursor:pointer!important
+ }
+ #salon-mobile #tn13Services .tn31-service-demo .tn31-service-side{
+  position:absolute!important;right:12px!important;top:var(--service-side-center,50%)!important;
+  transform:translate(11.34px,-50%)!important;align-self:auto!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+  color:inherit!important;font:inherit!important;cursor:pointer!important
+ }
+ #salon-mobile #tn13Services .tn31-service-demo-desc{
+  grid-column:1!important;grid-row:2!important;display:block!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  margin:2px 0 0!important;padding:0!important;overflow-wrap:anywhere!important
+ }
+ #salon-mobile #tn13Services .tn31-service-demo-desc p{
+  display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;
+  overflow:hidden!important;margin:0!important;color:#bdbdbd!important;
+  font:400 11px/1.32 "Manrope",Arial,sans-serif!important
+ }
+ #salon-mobile #tn13Services .tn31-service-demo.is-expanded .tn31-service-demo-desc p{
+  display:block!important;-webkit-line-clamp:unset!important;overflow:visible!important
+ }
+ #salon-mobile #tn13Services .tn31-service-demo-more{
+  display:block!important;margin:3px 0 0!important;padding:2px 0!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+  color:#ede1d6!important;text-align:left!important;cursor:pointer!important;
+  font:600 11px/1.25 "Manrope",Arial,sans-serif!important;
+  text-decoration:underline!important;text-underline-offset:3px!important
+ }
+ #salon-mobile #tn13Services .tn31-service-demo-more:focus-visible{
+  outline:2px solid #ede1d6!important;outline-offset:2px!important
+ }
+ body[data-br-lang="hy"] #salon-mobile #tn13Services .tn31-service-name{
+  font-size:clamp(14px,4vw,16px)!important;line-height:1.18!important
+ }
+}
+@media(max-width:370px){
+ #salon-mobile #tn13Services .tn31-service-row,#salon-mobile #tn13Services .tn31-service-row.tn31-service-demo{
+  grid-template-columns:minmax(0,1fr) 144px!important;
+  column-gap:6px!important;padding-left:10px!important;padding-right:10px!important
+ }
+ #salon-mobile #tn13Services .tn31-service-side{
+  grid-template-columns:43px minmax(0,1fr)!important;column-gap:6px!important;
+  width:144px!important;min-width:144px!important;max-width:144px!important
+ }
+ #salon-mobile #tn13Services .tn31-service-demo .tn31-service-side{right:10px!important}
+}
+
+/* Mobile service categories: copy the independent, horizontally scrollable
+   pills from Beauty Room by Esmeralda (35px high, 15px side padding, 8px gap,
+   Manrope 12.705px, 21% above Esmeralda base). No forced grid or compression for 1-4 categories. */
+@media(max-width:1023px){
+ #salon-mobile #tn13Services .tn31-cats{
+  display:flex!important;align-items:center!important;justify-content:flex-start!important;
+  flex-wrap:nowrap!important;grid-template-columns:none!important;gap:8px!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  overscroll-behavior-inline:contain!important;-webkit-overflow-scrolling:touch!important;
+  scrollbar-width:none!important;touch-action:pan-x!important;
+ }
+ #salon-mobile #tn13Services .tn31-cats::-webkit-scrollbar{display:none!important}
+ #salon-mobile #tn13Services .tn31-cat{
+  flex:0 0 auto!important;width:max-content!important;min-width:max-content!important;
+  height:35px!important;padding:0 15px!important;
+  font:500 12.705px/1 'Manrope',Arial,sans-serif!important;
+  white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important;
+  text-align:center!important;
+ }
+ #salon-mobile #tn13Services .tn31-service-name{font-weight:600!important}
+}
+
+
+
+@media(max-width:1023px){
+  #salon-mobile #tn13Top .tn22-card{
+    background:linear-gradient(180deg,#f8f4ee 0%,#f8f4ee 65%,rgba(248,244,238,.96) 73%,rgba(248,244,238,.56) 86%,rgba(248,244,238,0) 97%)!important;
+    border:1px solid rgba(24,24,24,.04)!important;
+    border-radius:20px 20px 0 0!important;
+    border-bottom:0!important;
+    box-shadow:0 -4px 23px rgba(35,29,25,.065),-6px 0 19px rgba(35,29,25,.045),6px 0 19px rgba(35,29,25,.045)!important;
+    -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 78%,rgba(0,0,0,.62) 86%,transparent 96%)!important;
+    mask-image:linear-gradient(to bottom,#000 0%,#000 78%,rgba(0,0,0,.62) 86%,transparent 96%)!important;
+  }
+  #salon-mobile #tn13Top .tn22-top{padding-left:14px!important;}
+  #salon-mobile #tn13Top .tn22-card:after{background:linear-gradient(180deg,rgba(248,244,238,0),rgba(248,244,238,.5) 55%,#f8f4ee)!important;}
+  #salon-mobile #tn13Gallery .tn22-gallery-tabs{
+    width:100%!important;
+    gap:0!important;
+    overflow:hidden!important;
+  }
+  #salon-mobile #tn13Gallery .tn22-gallery-tab{
+    flex:1 1 0!important;
+    min-width:0!important;
+    padding-inline:0!important;
+  }
+  #salon-mobile #tn13Services{
+    --mobile-service-price-size:clamp(12px,3.55vw,14px);
+    --mobile-service-currency-inset:8px;
+  }
+  #salon-mobile #tn13Services .tn31-service-price,#salon-mobile #tn13Services .tn31-service-single-price,#salon-mobile #tn13Services .tn31-service-range-price{
+    box-sizing:border-box!important;
+    padding-right:var(--mobile-service-currency-inset)!important;
+    font-size:var(--mobile-service-price-size)!important;
+    font-weight:600!important;
+    font-variant-numeric:tabular-nums!important;
+  }
+  #salon-mobile #tn13Services .tn31-service-price{
+    transform:translateX(-7.56px)!important;
+  }
+  #salon-mobile #tn13Services .tn31-price-low,#salon-mobile #tn13Services .tn31-price-high{
+    width:max-content!important;
+    justify-self:center!important;
+    text-align:center!important;
+  }
+  #salon-mobile #tn13Services .tn31-price-symbol,#salon-mobile #tn13Services .tn31-money-symbol{
+    flex:0 0 14px!important;
+    width:14px!important;
+    min-width:14px!important;
+    max-width:14px!important;
+    text-align:right!important;
+  }
+  #salon-mobile #tn13Sticky{
+    grid-template-columns:minmax(0,1fr) 160px!important;
+  }
+  #salon-mobile #tn13Sticky button{
+    width:160px!important;
+    min-width:160px!important;
+    max-width:160px!important;
+    padding-inline:22px!important;
+  }
+  body[data-br-lang="hy"] #salon-mobile #tn13Sticky>strong{
+    font-size:13px!important;
+    line-height:1.2!important;
+    letter-spacing:-.02em!important;
+    white-space:normal!important;
+  }
+}
+@media(max-width:360px){
+  #salon-mobile #tn13Sticky{
+    grid-template-columns:minmax(0,1fr) 150px!important;
+  }
+  #salon-mobile #tn13Sticky button{
+    width:150px!important;
+    min-width:150px!important;
+    max-width:150px!important;
+    padding-inline:16px!important;
+  }
+}
+
+
+#salon-mobile #tn13Visit .tn22-visit-actions.is-single{grid-template-columns:1fr!important}
+
+/* 2026-10-03 — approved mobile hero, gallery and services refinements. */
+@media(max-width:1023px){
+  #salon-mobile #tn13Top .tn22-top{
+    padding-left:20px!important;
+    padding-right:20px!important;
+  }
+  #salon-mobile #tn13Top .tn22-brand{
+    max-width:calc(100% - 58px)!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+  }
+  #salon-mobile #tn13Top .tn22-brand img{
+    display:block!important;
+    max-width:min(42vw,168px)!important;
+    max-height:32px!important;
+    width:auto!important;
+    height:auto!important;
+    object-fit:contain!important;
+    object-position:left center!important;
+    transform:none!important;
+  }
+  #salon-mobile #tn13Top .tn22-title{
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    width:100%!important;
+    min-height:86px!important;
+    margin:0!important;
+    text-align:center!important;
+  }
+  #salon-mobile #tn13Top .tn22-title.is-single-line{
+    font-size:clamp(34px,16vw,var(--hero-single-max,68px))!important;
+    line-height:.92!important;
+    letter-spacing:.16em!important;
+    text-indent:.16em!important;
+    white-space:nowrap!important;
+  }
+  #salon-mobile #tn13Top .tn22-sub{
+    width:100%!important;
+    text-align:center!important;
+  }
+
+  #salon-mobile #tn13Gallery{
+    --gallery-origin-x:50%;
+    --gallery-origin-y:84%;
+    transform-origin:var(--gallery-origin-x) var(--gallery-origin-y)!important;
+    transform:translate3d(0,18px,0) scale(.94)!important;
+    border-radius:28px!important;
+    transition:transform .48s cubic-bezier(.16,1,.3,1),opacity .28s ease,border-radius .48s cubic-bezier(.16,1,.3,1),visibility 0s linear .48s!important;
+  }
+  #salon-mobile #tn13Gallery.open{
+    transform:translate3d(0,0,0) scale(1)!important;
+    border-radius:0!important;
+    transition-delay:0s!important;
+  }
+  #salon-mobile #tn13Gallery.closing{
+    transform:translate3d(0,10px,0) scale(.965)!important;
+    border-radius:22px!important;
+  }
+  #salon-mobile #tn13Gallery .tn22-gallery-tabs-wrap{
+    position:sticky!important;
+    overflow:visible!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  #salon-mobile #tn13Gallery .tn22-gallery-tabs{
+    width:100%!important;
+    display:flex!important;
+    gap:0!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    scrollbar-width:none!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior-inline:contain!important;
+  }
+  #salon-mobile #tn13Gallery .tn22-gallery-tabs::-webkit-scrollbar{
+    display:none!important;
+  }
+  #salon-mobile #tn13Gallery .tn22-gallery-tab{
+    flex:0 0 auto!important;
+    width:max-content!important;
+    min-width:max-content!important;
+    padding-inline:18px!important;
+    white-space:nowrap!important;
+    font-size:14.36px!important;
+  }
+
+
+  #salon-mobile .tn22-view-gallery{
+    height:44px!important;
+    padding:0 20px!important;
+    font-size:12px!important;
+    transition:transform .15s ease,background .15s ease!important;
+  }
+  #salon-mobile .tn22-view-gallery:active{
+    transform:translateX(-50%) scale(.96)!important;
+    background:rgba(35,29,26,.9)!important;
+  }
+  #salon-mobile .tn22-viewer-count{
+    font-size:10.5px!important;
+    transform:translateX(-8px)!important;
+  }
+  #salon-mobile .tn22-navbtn{
+    width:45px!important;
+    height:64px!important;
+    font-size:52px!important;
+  }
+
+  #salon-mobile #tn13Services .tn31-cats{
+    gap:8px!important;
+  }
+  #salon-mobile #tn13Services .tn31-cat{
+    font-size:13.98px!important;
+  }
+  #salon-mobile #tn13Services .tn31-cats.is-two{
+    overflow-x:hidden!important;
+    width:100%!important;
+  }
+  #salon-mobile #tn13Services .tn31-cats.is-two .tn31-cat{
+    flex:1 1 0!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    padding-inline:15px!important;
+  }
+  #salon-mobile #tn13Services{
+    --mobile-service-side-width:clamp(136px,35vw,146px);
+    --mobile-service-time-width:42px;
+    --mobile-service-side-gap:5px;
+  }
+  #salon-mobile #tn13Services .tn31-service-row,#salon-mobile #tn13Services .tn31-service-row.tn31-service-demo{
+    grid-template-columns:minmax(0,1fr) var(--mobile-service-side-width)!important;
+    column-gap:7px!important;
+  }
+  #salon-mobile #tn13Services .tn31-service-side{
+    grid-template-columns:var(--mobile-service-time-width) minmax(0,1fr)!important;
+    column-gap:var(--mobile-service-side-gap)!important;
+    width:var(--mobile-service-side-width)!important;
+    min-width:var(--mobile-service-side-width)!important;
+    max-width:var(--mobile-service-side-width)!important;
+  }
+  #salon-mobile #tn13Services .tn31-service-more-wrap{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:9px!important;
+    width:100%!important;
+    height:0;
+    overflow:hidden!important;
+    transition-property:height!important;
+    transition-duration:400ms;
+    transition-timing-function:cubic-bezier(.22,.66,.24,1)!important;
+  }
+  #salon-mobile #tn13Team .tn22-master-card.is-placeholder{
+    cursor:default!important;
+    pointer-events:none!important;
+  }
+}
+@media(max-width:370px){
+  #salon-mobile #tn13Services{
+    --mobile-service-side-width:132px;
+    --mobile-service-time-width:40px;
+    --mobile-service-side-gap:4px;
+  }
+  #salon-mobile #tn13Services .tn31-service-row,#salon-mobile #tn13Services .tn31-service-row.tn31-service-demo{
+    column-gap:5px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #salon-mobile #tn13Gallery{transition:none!important}
+  #salon-mobile #tn13Services .tn31-service-more-wrap{transition:none!important}
+}

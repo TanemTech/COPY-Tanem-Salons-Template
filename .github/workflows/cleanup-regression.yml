@@ -1,0 +1,160 @@
+name: Verify salon cleanup against approved baseline
+
+on:
+  push:
+    branches:
+      - main
+      - 'refactor/**'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  compare-to-approved-template:
+    runs-on: ubuntu-latest
+    outputs:
+      production: ${{ steps.site_mode.outputs.production }}
+    steps:
+      - name: Check out full repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Resolve frozen TANEM baseline (including copied client repositories)
+        run: |
+          if ! git cat-file -e '79ea1c63864627b634528c6c6f39c997226f85c4^{commit}' 2>/dev/null; then
+            git fetch --no-tags --depth=1 https://github.com/ichAEY/Shablon-only-for-salons.git refs/heads/baseline/services-approved-v1-2026-09-28
+          fi
+          git cat-file -e '79ea1c63864627b634528c6c6f39c997226f85c4^{commit}'
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Select template or production checks
+        id: site_mode
+        run: |
+          if node -e "const v=require('./tests/validate-site-data.cjs');process.exit(v.loadSiteData('site-data.js').mode==='production'?0:1)"; then
+            echo 'production=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'production=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Verify syntax, service contract, and unchanged effective CSS
+        run: |
+          node tests/check-template-regression.cjs
+          node tests/validate-site-data.cjs
+          if [ "${{ steps.site_mode.outputs.production }}" = 'true' ]; then
+            node tests/validate-site-data.cjs --production
+          fi
+          node tests/validate-site-data.cjs tests/fixtures/site-data.production.js --production
+          node tests/check-factory-contract.cjs
+
+  visual-regression:
+    needs: compare-to-approved-template
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Resolve frozen TANEM baseline (including copied client repositories)
+        run: |
+          if ! git cat-file -e '79ea1c63864627b634528c6c6f39c997226f85c4^{commit}' 2>/dev/null; then
+            git fetch --no-tags --depth=1 https://github.com/ichAEY/Shablon-only-for-salons.git refs/heads/baseline/services-approved-v1-2026-09-28
+          fi
+          git cat-file -e '79ea1c63864627b634528c6c6f39c997226f85c4^{commit}'
+      - name: Configure Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium screenshot dependencies
+        run: |
+          python -m pip install playwright==1.57.0 pillow
+          python -m playwright install --with-deps chromium
+      - name: Compare approved and cleaned UI at laptop and mobile sizes
+        if: needs.compare-to-approved-template.outputs.production != 'true'
+        run: |
+          mkdir -p /tmp/salon-approved
+          git archive 79ea1c63864627b634528c6c6f39c997226f85c4 | tar -x -C /tmp/salon-approved
+          python -m http.server 4173 --bind 127.0.0.1 --directory /tmp/salon-approved > /tmp/salon-approved.log 2>&1 &
+          python -m http.server 4174 --bind 127.0.0.1 --directory "$GITHUB_WORKSPACE" > /tmp/salon-cleaned.log 2>&1 &
+          sleep 2
+          python tests/visual_compare.py
+      - name: Exercise a populated production site
+        run: |
+          mkdir -p /tmp/salon-production
+          cp -R . /tmp/salon-production/
+          cp tests/fixtures/site-data.production.js /tmp/salon-production/site-data.js
+          python -m http.server 4175 --bind 127.0.0.1 --directory /tmp/salon-production > /tmp/salon-production.log 2>&1 &
+          sleep 2
+          python tests/factory_browser.py
+          CLIENT_SITE_URL=http://127.0.0.1:4175 python tests/client_smoke.py --engine chromium
+      - name: Smoke test the actual populated client site
+        if: needs.compare-to-approved-template.outputs.production == 'true'
+        run: |
+          python -m http.server 4176 --bind 127.0.0.1 --directory "$GITHUB_WORKSPACE" > /tmp/salon-client.log 2>&1 &
+          sleep 2
+          python tests/client_smoke.py --engine chromium
+      - name: Attach screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: approved-versus-cleaned-screenshots
+          path: test-artifacts/visual/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  webkit-baseline-regression:
+    needs: compare-to-approved-template
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out complete history for the frozen baseline
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Resolve frozen TANEM baseline (including copied client repositories)
+        run: |
+          if ! git cat-file -e '79ea1c63864627b634528c6c6f39c997226f85c4^{commit}' 2>/dev/null; then
+            git fetch --no-tags --depth=1 https://github.com/ichAEY/Shablon-only-for-salons.git refs/heads/baseline/services-approved-v1-2026-09-28
+          fi
+          git cat-file -e '79ea1c63864627b634528c6c6f39c997226f85c4^{commit}'
+      - name: Configure Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install WebKit and snapshot dependencies
+        run: |
+          python -m pip install playwright==1.57.0 pillow
+          python -m playwright install --with-deps webkit
+      - name: Compare approved UI in WebKit at laptop and phone sizes
+        if: needs.compare-to-approved-template.outputs.production != 'true'
+        run: |
+          mkdir -p /tmp/salon-approved
+          git archive 79ea1c63864627b634528c6c6f39c997226f85c4 | tar -x -C /tmp/salon-approved
+          python -m http.server 4173 --bind 127.0.0.1 --directory /tmp/salon-approved > /tmp/salon-approved.log 2>&1 &
+          python -m http.server 4174 --bind 127.0.0.1 --directory "$GITHUB_WORKSPACE" > /tmp/salon-cleaned.log 2>&1 &
+          sleep 2
+          python tests/visual_compare.py --engine webkit --quick
+      - name: Smoke test the actual populated client site in WebKit
+        if: needs.compare-to-approved-template.outputs.production == 'true'
+        run: |
+          python -m http.server 4176 --bind 127.0.0.1 --directory "$GITHUB_WORKSPACE" > /tmp/salon-client-webkit.log 2>&1 &
+          sleep 2
+          python tests/client_smoke.py --engine webkit
+      - name: Verify generic client smoke against fixture in WebKit
+        run: |
+          mkdir -p /tmp/salon-production-webkit
+          cp -R . /tmp/salon-production-webkit/
+          cp tests/fixtures/site-data.production.js /tmp/salon-production-webkit/site-data.js
+          python -m http.server 4175 --bind 127.0.0.1 --directory /tmp/salon-production-webkit > /tmp/salon-production-webkit.log 2>&1 &
+          sleep 2
+          CLIENT_SITE_URL=http://127.0.0.1:4175 python tests/client_smoke.py --engine webkit
+      - name: Attach WebKit comparison snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: approved-vs-cleaned-webkit
+          path: test-artifacts/visual/
+          if-no-files-found: ignore
+          retention-days: 7

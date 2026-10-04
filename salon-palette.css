@@ -1,0 +1,440 @@
+/* TANEM salon palette v2 — approved neutral backgrounds and graphite buttons.
+   Kept separate from approved layout/service CSS to preserve factory baselines.
+   Loaded after desktop.css or after mobile-overrides.css. No dimensions or markup. */
+html[data-br-device="desktop"] #salon-desktop-v1,html[data-br-device="mobile"] #salon-mobile{
+  --tanem-bg:#FAF9F6;
+  --tanem-section:#F1ECE5;
+  --tanem-card:#FFFFFF;
+  --tanem-dark:#242424;
+  --tanem-ink:#252525;
+  --tanem-primary:#252525;
+  --tanem-primary-hover:#424242;
+  --tanem-primary-active:#161616;
+  --tanem-secondary:#EBE5DE;
+  --tanem-secondary-hover:#D9D0C6;
+  --tanem-secondary-active:#C6BEB5;
+  --tanem-inverse:#F5F2ED;
+}
+html[data-br-device="desktop"],html[data-br-device="desktop"] body,html[data-br-device="mobile"] body{
+  background-color:#FAF9F6!important;
+  color:#252525!important;
+}
+/* DESKTOP — soften the original warm gradients without removing them. */
+html[data-br-device="desktop"] #salon-desktop-v1{
+  background:#FAF9F6!important;
+  color:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 .std-header{
+  background:rgba(250,249,246,.96)!important;
+  border-bottom-color:rgba(37,37,37,.09)!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopTop.std-hero{
+  background:radial-gradient(ellipse 260px 520px at 0% 60%,rgba(160,148,136,.10),transparent 74%),
+    radial-gradient(ellipse 310px 560px at 102% 66%,rgba(174,158,141,.09),transparent 74%),
+    linear-gradient(105deg,#FAF9F6 0%,#F8F6F2 55%,#F1ECE5 100%)!important;
+  background-color:#FAF9F6!important;
+  color:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopPortfolio.std-portfolio{
+  background:radial-gradient(ellipse 580px 340px at -8% 95%,rgba(174,161,146,.08),transparent 72%),
+    radial-gradient(ellipse 550px 350px at 108% 4%,rgba(179,165,150,.07),transparent 73%),
+    linear-gradient(180deg,#F8F6F2 0%,#F1ECE5 100%)!important;
+  background-color:#F1ECE5!important;
+  color:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopAbout{
+  background:#FAF9F6!important;
+  color:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopAbout :is(.mct-about-card,.br-about-column){
+  background:#FFFFFF!important;
+  border-color:rgba(37,37,37,.11)!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopAbout .dct-about-amenities-grid article{
+  background:linear-gradient(145deg,#F8F6F2,#F1ECE5)!important;
+  border-color:rgba(37,37,37,.10)!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopReviews.std-reviews{
+  background:#F1ECE5!important;
+  color:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopReviews .std-review-card{
+  background:#FFFFFF!important;
+  border-color:rgba(37,37,37,.11)!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopReviews .std-reviews-all{
+  background:transparent!important;
+  color:#252525!important;
+  border-color:#77716B!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopReviews .std-reviews-all:hover{
+  background:#EBE5DE!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #stdGalleryBrowser.std-gallery-browser,html[data-br-device="desktop"] #salon-desktop-v1 #stdGalleryBrowser .std-gallery-browser-shell{
+  background:#F1ECE5!important;
+  color:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 .std-gallery-browser-tab{
+  background:#EBE5DE!important;
+  border-color:rgba(37,37,37,.16)!important;
+  color:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 .std-gallery-browser-tab:hover:not(.active){
+  background:#D9D0C6!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 .std-gallery-browser-tab.active,html[data-br-device="desktop"] #salon-desktop-v1 .std-gallery-browser-tab.active:hover{
+  background:#252525!important;
+  border-color:#252525!important;
+  color:#FFFFFF!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopServices .dct-service-sticky-card{
+  background:radial-gradient(330px 230px at 100% 0%,rgba(255,255,255,.75),transparent 72%),
+    linear-gradient(145deg,#FAF9F6,#F1ECE5)!important;
+  border-color:rgba(37,37,37,.13)!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopServices :is(.dct-service-card-meta>b.is-price,.dct-service-card-variant-meta>b.is-price){
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  color:#F5F2ED!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopServices :is(.mct-tab.is-active,.mct-tab-all.is-active[aria-selected="true"]){
+  background:#F5F2ED!important;
+  border-color:#F5F2ED!important;
+  color:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 :is(.std-header-book,.std-btn-primary,.dct-service-sticky-book,.std-master-page-book),html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopServices #stdStickyServiceBook{
+  background:#252525!important;
+  border-color:#252525!important;
+  color:#FFFFFF!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 :is(.std-header-book,.std-btn-primary,.dct-service-sticky-book,.std-master-page-book):hover,html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopServices #stdStickyServiceBook:hover{
+  background:#424242!important;
+  border-color:#424242!important;
+  color:#FFFFFF!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 :is(.std-header-book,.std-btn-primary,.dct-service-sticky-book,.std-master-page-book):active,html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopServices #stdStickyServiceBook:active{
+  background:#161616!important;
+  border-color:#161616!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 :is(#salonDesktopTop .std-btn:not(.std-btn-primary),#salonDesktopPortfolio .std-portfolio-more,#salonDesktopServices .dct-service-sticky-work){
+  background:#EBE5DE!important;
+  border-color:#D9D0C6!important;
+  color:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 :is(#salonDesktopTop .std-btn:not(.std-btn-primary),#salonDesktopPortfolio .std-portfolio-more,#salonDesktopServices .dct-service-sticky-work):hover{
+  background:#D9D0C6!important;
+  border-color:#D9D0C6!important;
+  color:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 :is(#salonDesktopTop .std-btn:not(.std-btn-primary),#salonDesktopPortfolio .std-portfolio-more,#salonDesktopServices .dct-service-sticky-work):active{
+  background:#C6BEB5!important;
+  border-color:#C6BEB5!important;
+  color:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopServices .dct-service-sticky-work:hover>span,html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopServices .dct-service-sticky-work:hover>span svg,html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopServices #stdStickyGalleryOpen:hover>span{
+  color:#252525!important;
+  -webkit-text-fill-color:#252525!important;
+  stroke:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopContacts .std-contact-call{
+  background:#F5F2ED!important;
+  border-color:#F5F2ED!important;
+  color:#252525!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopContacts .std-contact-call:hover{
+  background:#FFFFFF!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopContacts .std-contact-route{
+  background:transparent!important;
+  border-color:#F5F2ED!important;
+  color:#F5F2ED!important;
+}
+html[data-br-device="desktop"] #salon-desktop-v1 #salonDesktopContacts .std-contact-route:hover{
+  background:rgba(245,242,237,.12)!important;
+}
+/* MOBILE — maintain all existing motion, category sizing and price alignment. */
+html[data-br-device="mobile"]{
+  --salon-template-white:#FAF9F6;
+  --salon-template-soft:#F1ECE5;
+  --salon-template-menu:#FAF9F6;
+  --salon-template-mid:#EBE5DE;
+  --salon-template-ink:#252525;
+  --salon-template-dark:#242424;
+  background:linear-gradient(to bottom,#FAF9F6 0%,#FAF9F6 58%,#242424 100%)!important;
+}
+html[data-br-device="mobile"] #salon-mobile{
+  background:#FAF9F6!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Top,html[data-br-device="mobile"] #salon-mobile #tn13Top .tn22-top{
+  background:#FAF9F6!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Top .tn22-card{
+  background:linear-gradient(180deg,#FAF9F6 0%,#FAF9F6 82%,rgba(250,249,246,0) 100%)!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Top .tn22-card:after,html[data-br-device="mobile"] #salon-mobile #tn13Top .tn22-media.br-video-media:after{
+  background:linear-gradient(180deg,rgba(250,249,246,0),rgba(250,249,246,.48) 52%,#FAF9F6 100%)!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Portfolio{
+  background:#FAF9F6!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Portfolio:before{
+  background:linear-gradient(180deg,#FAF9F6,rgba(250,249,246,0))!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn38About{
+  background:#FAF9F6!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn38About :is(.tn42-card,.tn42-body){
+  background:#FFFFFF!important;
+  border-color:rgba(37,37,37,.11)!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn38About .tn42-fact{
+  background:#F8F6F2!important;
+  border-color:#E6DFD6!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Reviews{
+  background:#F1ECE5!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Reviews .br-review-card{
+  background:#F8F6F2!important;
+  border-color:#E2DAD1!important;
+  box-shadow:0 4px 12px rgba(50,39,32,.03)!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Sticky{
+  background:rgba(250,249,246,.97)!important;
+  border-color:rgba(37,37,37,.12)!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13BookSheet .tn13-panel{
+  background:#FAF9F6!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13BookSheet .tn50-book-option{
+  background:#FFFFFF!important;
+  border-color:rgba(37,37,37,.12)!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Gallery{
+  background:#F1ECE5!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Gallery .tn22-gallery{
+  background:transparent!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Gallery :is(.tn22-gallery-back,.tn22-gallery-title strong){
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Gallery .tn22-gallery-title span{
+  color:#66615D!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Gallery .tn22-gallery-tabs-wrap{
+  background:#F1ECE5!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Gallery .tn22-gallery-tabs{
+  /* Esmeralda's 14px capsule frame, without bringing back a second-colour band. */
+  border:1px solid #C6BEB5!important;
+  border-radius:14px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Gallery .tn22-gallery-tab{
+  flex:0 0 auto!important;width:max-content!important;min-width:max-content!important;padding-inline:18px!important;
+  font-size:14.36px!important;line-height:1.15!important;white-space:nowrap!important;
+  background:transparent!important;color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Gallery .tn22-gallery-tab.active{
+  background:#252525!important;
+  color:#FFFFFF!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Gallery .tn22-gallery-tile{
+  background:#EBE5DE!important;
+}
+html[data-br-device="mobile"] #salon-mobile :is(#tn13Services .tn31-cat.active,#tn13Visit .tn22-route){
+  background:#F5F2ED!important;
+  border-color:#F5F2ED!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile :is(#tn13Top .tn22-cta,#tn13Sticky button,.tn22-master-book){
+  background:#252525!important;
+  border-color:#252525!important;
+  color:#FFFFFF!important;
+}
+html[data-br-device="mobile"] #salon-mobile :is(#tn13Top .tn22-cta,#tn13Sticky button,.tn22-master-book):hover{
+  background:#424242!important;
+  border-color:#424242!important;
+}
+html[data-br-device="mobile"] #salon-mobile :is(#tn13Top .tn22-cta,#tn13Sticky button,.tn22-master-book):active{
+  background:#161616!important;
+  border-color:#161616!important;
+}
+html[data-br-device="mobile"] #salon-mobile :is(#tn13Top .tn22-worklink,#tn13Portfolio .tn22-port-all){
+  background:#EBE5DE!important;
+  border-color:#D9D0C6!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile :is(#tn13Top .tn22-worklink,#tn13Portfolio .tn22-port-all):hover{
+  background:#D9D0C6!important;
+  border-color:#D9D0C6!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile :is(#tn13Top .tn22-worklink,#tn13Portfolio .tn22-port-all):active{
+  background:#C6BEB5!important;
+  border-color:#C6BEB5!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Visit .tn22-route:hover{
+  background:#FFFFFF!important;
+  border-color:#FFFFFF!important;
+  color:#252525!important;
+}
+html[data-br-device="mobile"] #salon-mobile .tn22-view-gallery{
+  background:rgba(37,37,37,.78)!important;
+  border-color:rgba(255,255,255,.48)!important;
+  color:#FFFFFF!important;
+}
+
+/* Approved mobile refinement: uniform hero/portfolio, milk benefit cards and CTA light sweep.
+   The original dark services, team and contacts are inherited unchanged. */
+html[data-br-device="mobile"] #salon-mobile #tn13Top{border-bottom:0!important;box-shadow:none!important}
+html[data-br-device="mobile"] #salon-mobile #tn13Portfolio{border-top:0!important;box-shadow:none!important}
+/* Exactly the same 3.2-second shimmer timing as the floating booking button. */
+html[data-br-device="mobile"] #salon-mobile #tn13Top .tn22-cta{
+  position:relative!important;overflow:hidden!important;isolation:isolate!important
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Top .tn22-cta::after{
+  content:""!important;display:block!important;position:absolute!important;z-index:1!important;
+  top:-30%!important;bottom:-30%!important;left:-30%!important;width:34%!important;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent)!important;
+  transform:skewX(-20deg)!important;animation:tn22Shine 3.2s ease-in-out infinite!important;
+  opacity:1!important;pointer-events:none!important
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Top .tn22-cta>svg,html[data-br-device="mobile"] #salon-mobile #tn13Top .tn22-cta>span{
+  position:relative!important;z-index:2!important
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-br-device="mobile"] #salon-mobile #tn13Top .tn22-cta::after{animation:none!important}
+}
+
+/* Mobile master detail tabs: the last pill can scroll fully into view
+   at the right screen edge without altering the existing pill spacing. */
+html[data-br-device="mobile"] #salon-mobile .tn22-master-tabs{
+  margin-right:-20px!important;padding-right:12px!important;box-sizing:border-box!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  -webkit-mask-image:none!important;mask-image:none!important;scrollbar-width:none!important;
+}
+html[data-br-device="mobile"] #salon-mobile .tn22-master-tabs::-webkit-scrollbar{display:none!important}
+html[data-br-device="mobile"] #salon-mobile .tn22-master-tabs button{
+  flex-shrink:0!important;white-space:nowrap!important;
+}
+
+/* Esmeralda reference: one framed mobile gallery category capsule with a
+   single continuous section background behind it. */
+html[data-br-device="mobile"] #salon-mobile #tn13Gallery .tn22-gallery-tabs-wrap{
+  background:#F1ECE5!important;box-shadow:none!important;
+}
+/* The first mobile service tab shares the same screen-left edge as the first
+   service card (25px container inset - 15px card bleed = 10px). Do not add
+   a right-side fade or alter the already-approved service card geometry. */
+html[data-br-device="mobile"] #salon-mobile #tn13Services .tn31-cats-wrap{
+  margin-left:-25px!important;margin-right:-25px!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Services .tn31-cats,html[data-br-device="mobile"] #salon-mobile #tn13Services .tn31-cats.is-compact{
+  margin-left:0!important;width:100%!important;max-width:100%!important;
+  box-sizing:border-box!important;
+  padding-left:10px!important;padding-right:10px!important;
+  scroll-padding-left:10px!important;scroll-padding-right:10px!important;
+}
+/* Match the actual Esmeralda service tabs irrespective of category count:
+   each card retains natural width and the horizontal rail does the overflow. */
+html[data-br-device="mobile"] #salon-mobile #tn13Services .tn31-cats{
+  display:flex!important;flex-wrap:nowrap!important;
+  align-items:center!important;justify-content:flex-start!important;
+  gap:8px!important;grid-template-columns:none!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  overscroll-behavior-inline:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-x!important;scrollbar-width:none!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Services .tn31-cats .tn31-cat{
+  flex:0 0 auto!important;width:max-content!important;min-width:max-content!important;
+  height:35px!important;padding:0 15px!important;
+  font:500 13.98px/1 'Manrope',Arial,sans-serif!important;
+  white-space:nowrap!important;word-break:normal!important;overflow-wrap:normal!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Services .tn31-cats.is-two .tn31-cat{
+  flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important;
+}
+html[data-br-device="mobile"] #salon-mobile #tn13Services .tn31-cats::before,html[data-br-device="mobile"] #salon-mobile #tn13Services .tn31-cats::after{
+  content:none!important;display:none!important;
+}
+html[data-br-device="mobile"] #salon-mobile .tn22-viewer .tn23-viewer-foot{
+  position:absolute!important;z-index:8!important;
+  left:0!important;right:0!important;bottom:-55px!important;
+  height:44px!important;min-height:44px!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+}
+html[data-br-device="mobile"] #salon-mobile .tn22-viewer .tn22-view-gallery{
+  position:absolute!important;left:50%!important;top:50%!important;bottom:auto!important;
+  transform:translate(-50%,-50%)!important;
+  height:44px!important;min-width:162px!important;
+  padding:0 20px!important;display:inline-flex!important;
+  align-items:center!important;justify-content:center!important;
+  white-space:nowrap!important;font-size:12px!important;
+}
+html[data-br-device="mobile"] #salon-mobile .tn22-viewer:not([data-source="portfolio"]) .tn22-view-gallery,html[data-br-device="mobile"] #salon-mobile .tn22-viewer .tn22-view-gallery[hidden]{
+  display:none!important;
+}
+html[data-br-device="mobile"] #salon-mobile .tn22-viewer .tn22-view-gallery:active{
+  transform:translate(-50%,-50%) scale(.96)!important;
+  background:rgba(35,29,26,.9)!important;
+}
+
+html[data-br-device="mobile"] #salon-mobile .tn22-viewer .tn22-viewer-count{
+  position:absolute!important;right:8px!important;top:50%!important;
+  transform:translateY(-50%)!important;
+  margin:0!important;min-width:49px!important;
+  text-align:right!important;white-space:nowrap!important;font-size:10.5px!important;
+}
+/* On desktop the photo count belongs at the far right edge, just below the
+   photo, while the portfolio gallery CTA is approximately 2cm wider. */
+@media(min-width:1024px){
+  html[data-br-device="desktop"] #salon-desktop-v1 #stdGallery .std-gallery-count{
+    left:auto!important;right:0!important;bottom:-55px!important;
+    transform:none!important;
+    box-sizing:border-box!important;
+    min-width:77px!important;height:46px!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;
+    border:0!important;background:transparent!important;box-shadow:none!important;
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+    color:rgba(255,255,255,.86)!important;font-size:12.1px!important;
+  }
+  html[data-br-device="desktop"] #salon-desktop-v1 #stdGallery[data-source="portfolio"] .std-view-gallery{
+    display:inline-flex!important;
+    align-items:center!important;justify-content:center!important;
+    left:50%!important;bottom:-55px!important;
+    transform:translateX(-50%)!important;
+    width:240px!important;min-width:240px!important;
+    height:48px!important;padding:0 22px!important;
+    border-color:rgba(255,255,255,.30)!important;
+    background:rgba(255,255,255,.13)!important;
+    -webkit-backdrop-filter:blur(16px)!important;backdrop-filter:blur(16px)!important;
+    box-shadow:0 10px 30px rgba(0,0,0,.16)!important;font-size:12.1px!important;
+  }
+  html[data-br-device="desktop"] #salon-desktop-v1 #stdGallery .std-view-gallery[hidden]{
+    display:none!important;
+  }
+  html[data-br-device="desktop"] #salon-desktop-v1 #stdGalleryBrowser .std-gallery-browser-tab{
+    font-size:14px!important;
+    line-height:1.1!important;
+  }
+}
