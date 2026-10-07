@@ -28,6 +28,10 @@ jobs:
             git fetch --no-tags --depth=1 https://github.com/ichAEY/Shablon-only-for-salons.git refs/heads/baseline/services-approved-v1-2026-09-28
           fi
           git cat-file -e '79ea1c63864627b634528c6c6f39c997226f85c4^{commit}'
+          if ! git cat-file -e '4bf5f867c0217a4a478a6ab9a5d6b4aad49d4042:site-data.js' 2>/dev/null; then
+            git fetch --no-tags --depth=1 https://github.com/ichAEY/Shablon-only-for-salons.git 4bf5f867c0217a4a478a6ab9a5d6b4aad49d4042
+          fi
+          git cat-file -e '4bf5f867c0217a4a478a6ab9a5d6b4aad49d4042:site-data.js'
       - name: Configure Node.js
         uses: actions/setup-node@v4
         with:
@@ -64,6 +68,10 @@ jobs:
             git fetch --no-tags --depth=1 https://github.com/ichAEY/Shablon-only-for-salons.git refs/heads/baseline/services-approved-v1-2026-09-28
           fi
           git cat-file -e '79ea1c63864627b634528c6c6f39c997226f85c4^{commit}'
+          if ! git cat-file -e '4bf5f867c0217a4a478a6ab9a5d6b4aad49d4042:site-data.js' 2>/dev/null; then
+            git fetch --no-tags --depth=1 https://github.com/ichAEY/Shablon-only-for-salons.git 4bf5f867c0217a4a478a6ab9a5d6b4aad49d4042
+          fi
+          git cat-file -e '4bf5f867c0217a4a478a6ab9a5d6b4aad49d4042:site-data.js'
       - name: Configure Python
         uses: actions/setup-python@v5
         with:
@@ -119,6 +127,10 @@ jobs:
             git fetch --no-tags --depth=1 https://github.com/ichAEY/Shablon-only-for-salons.git refs/heads/baseline/services-approved-v1-2026-09-28
           fi
           git cat-file -e '79ea1c63864627b634528c6c6f39c997226f85c4^{commit}'
+          if ! git cat-file -e '4bf5f867c0217a4a478a6ab9a5d6b4aad49d4042:site-data.js' 2>/dev/null; then
+            git fetch --no-tags --depth=1 https://github.com/ichAEY/Shablon-only-for-salons.git 4bf5f867c0217a4a478a6ab9a5d6b4aad49d4042
+          fi
+          git cat-file -e '4bf5f867c0217a4a478a6ab9a5d6b4aad49d4042:site-data.js'
       - name: Configure Python
         uses: actions/setup-python@v5
         with:
