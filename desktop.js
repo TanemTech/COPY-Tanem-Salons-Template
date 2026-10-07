@@ -139,7 +139,7 @@
         <div class="std-portfolio-head">
           <p class="std-portfolio-kicker">Портфолио</p>
           <h2 class="std-portfolio-title" id="salonDesktopPortfolioTitle">Наши работы</h2>
-          <p class="std-portfolio-copy">Фотографии и работы салона будут добавлены при заполнении шаблона.</p>
+          <p class="std-portfolio-copy">${SITE.mode==='production'?'Фотографии работ салона.':'Фотографии и работы салона будут добавлены при заполнении шаблона.'}</p>
         </div>
         <div class="std-portfolio-grid">
           ${PORTFOLIO.map((item,i)=>`<button class="std-work" type="button" data-portfolio-index="${i}" aria-label="Открыть фотографию"><img src="${item.src}" alt="${item.alt}" loading="${i<4?'eager':'lazy'}"></button>`).join('')}
@@ -1269,6 +1269,7 @@
     ['Нажмите, чтобы позвонить','Սեղմեք զանգահարելու համար','Click to call'],['Написать в салон','Գրել սրահին','Message the salon'],
     ['График работы','Աշխատանքային ժամեր','Opening hours'],['Уточняется','Կավելացվի','To be added'],
     ['Цифровой офис для салонов красоты','Թվային գրասենյակ գեղեցկության սրահների համար','Digital office for beauty salons'],['Создано в','Ստեղծված է','Created in'],['Позвонить','Զանգահարել','Call'],['Построить маршрут','Կառուցել երթուղի','Get directions'],['Всё необходимое для комфортного визита','Ամեն ինչ հարմարավետ այցի համար','Everything for a comfortable visit'],['Салон красоты в городе','Գեղեցկության սրահ Քաղաքում','Beauty salon in City'],['Здесь можно спокойно выбрать нужные процедуры и доверить уход мастерам разных направлений. Мы ценим аккуратную работу, комфорт и внимательное отношение к каждому гостю.','Այստեղ կարող եք հանգիստ ընտրել անհրաժեշտ ծառայությունները և վստահել խնամքը տարբեր ուղղությունների մասնագետներին։ Մենք կարևորում ենք ճշգրիտ աշխատանքը, հարմարավետությունն ու յուրաքանչյուր հյուրի նկատմամբ ուշադիր վերաբերմունքը։','Choose the services you need and trust your care to specialists across different beauty fields. We value precise work, comfort, and attentive service for every guest.'],['Волосы, маникюр, брови и ресницы, эпиляция.','Մազեր, մատնահարդարում, հոնքեր և թարթիչներ, էպիլյացիա։','Hair, manicure, brows and lashes, hair removal.'],['Спокойная атмосфера и внимание к каждому гостю.','Հանգիստ մթնոլորտ և ուշադրություն յուրաքանչյուր հյուրի նկատմամբ։','A calm atmosphere and personal attention.'],['Контакты будут добавлены при заполнении шаблона.','Կոնտակտները կավելացվեն ձևանմուշը լրացնելիս։','Contact details will be added when the template is completed.'],['Разные направления','Տարբեր ուղղություններ','Different services'],['Комфорт','Հարմարավետություն','Comfort'],['Прямая запись','Ուղիղ ամրագրում','Direct booking'],
+    ['Фотографии работ салона.','Սրահի աշխատանքների լուսանկարները։','Photos of the salon’s work.'],
     ['Запись','Ամրագրում','Booking'],['Как вам удобнее записаться?','Ինչպե՞ս է ձեզ հարմար ամրագրել։','How would you like to book?'],
     ['Выберите удобный способ связи.','Ընտրեք ձեզ հարմար կապի տարբերակը։','Choose the most convenient way to contact us.'],
     ['Телефон','Հեռախոս','Phone'],['Открыть','Բացել','Open'],['Профиль','Պրոֆիլ','Profile'],['О мастере','Մասնագետի մասին','About the specialist'],
