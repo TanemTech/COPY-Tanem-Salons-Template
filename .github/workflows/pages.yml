@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configure Node.js
         uses: actions/setup-node@v4
@@ -39,6 +41,14 @@ jobs:
             echo "production=false" >> "$GITHUB_OUTPUT"
             echo "Template mode: Pages deployment is intentionally skipped."
           fi
+
+      - name: Resolve frozen TANEM baseline
+        if: steps.site_mode.outputs.production == 'true'
+        run: |
+          if ! git cat-file -e '79ea1c63864627b634528c6c6f39c997226f85c4^{commit}' 2>/dev/null; then
+            git fetch --no-tags --depth=1 https://github.com/ichAEY/Shablon-only-for-salons.git refs/heads/baseline/services-approved-v1-2026-09-28
+          fi
+          git cat-file -e '79ea1c63864627b634528c6c6f39c997226f85c4^{commit}'
 
       - name: Validate production contract
         if: steps.site_mode.outputs.production == 'true'

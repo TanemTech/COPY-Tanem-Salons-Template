@@ -42,6 +42,7 @@ assert.equal(starter.salon.heroDescription.ru,'Ваша красота. Ваша
 assert(starter.salon.about.ru.startsWith('В основе нашей работы — профессиональный подход'),'blank starter must preserve the approved universal About copy');
 assert.deepEqual(validateSiteData(starter,{rootDir:root}),[],'blank starter must have valid schema');
 
+if(data.mode==='template'){
 assert.equal(data.country,'RU','the distributed template must open as a Russian salon by default');
 assert.deepEqual([...data.locales],['ru','en'],'the distributed template must show only RU/EN by default');
 assert.equal(data.services.length,4,'the template preview must contain exactly four neutral services');
@@ -54,8 +55,19 @@ for(const service of data.services){
   assert.deepEqual([...service.variants],[],`${service.id}: demo variants must be empty`);
 }
 
+}else{
+  assert.equal(data.mode,'production','client data must use production mode');
+  assert.deepEqual(validateSiteData(data,{rootDir:root}),[],'production client must satisfy all release requirements');
+}
+
 const unsafe=structuredClone(data);
 unsafe.mode='production';
+// Exercise release blockers independently of preview or real customer content.
+unsafe.salon.name.ru='SALON NAME';
+unsafe.media.hero=[{src:'media-placeholder.svg'}];
+unsafe.contacts.phone='';
+unsafe.contacts.messengerUrl='';
+unsafe.contacts.booking=[];
 const unsafeErrors=validateSiteData(unsafe,{rootDir:root});
 assert(unsafeErrors.some(error=>error.includes('production placeholder')),'production mode must reject demo copy');
 assert(unsafeErrors.some(error=>error.includes('placeholder media')),'production mode must reject placeholder media');
