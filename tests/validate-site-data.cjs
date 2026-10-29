@@ -214,7 +214,7 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
   }
 
   if(object(data.media,'media')){
-    // Client logo is optional. hero.webp, profile.webp and 1..25 real gallery photos are the production media contract.
+    // Client logo is optional. hero.webp, profile.webp and every real gallery photo listed in media.gallery are the production media contract.
     if(data.media.logo)media(data.media.logo,'media.logo');
     media(data.media.about,'media.about',{required:production});
     if(Object.prototype.hasOwnProperty.call(data.media,'heroDesktop'))add('media.heroDesktop','obsolete field; use the same hero.webp on mobile and desktop');
@@ -232,7 +232,6 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
       if(typeof source==='string'&&source.trim())gallerySources.add(source.trim());
     });
     if(production&&gallerySources.size<1)add('media.gallery','must contain at least one real gallery-XX.webp photo');
-    if(gallerySources.size>25)add('media.gallery','must contain at most 25 unique gallery photos');
   }
 
   const reviewIds=new Set();

@@ -21,10 +21,9 @@
   const mediaItem=item=>({src:item.src,alt:russian(item.alt)});
   const PORTFOLIO=SITE.media.portfolio.map(mediaItem);
   const DESKTOP_GALLERY_GROUPS=Object.fromEntries(
-    Object.entries(SITE.media.gallery).map(([category,items])=>{
-      const limit=SITE.media.desktopGalleryLimits?.[category]??items.length;
-      return [category,items.slice(0,limit).map(mediaItem)];
-    })
+    Object.entries(SITE.media.gallery).map(([category,items])=>[
+      category,items.map(mediaItem)
+    ])
   );
   const SERVICE_CATEGORIES=SITE.categoryOrder.filter(category=>SITE.services.some(service=>service.category===category));
   const SERVICE_DATA=Object.fromEntries(SERVICE_CATEGORIES.map(category=>[

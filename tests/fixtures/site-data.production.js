@@ -41,7 +41,6 @@
       about:'tests/fixtures/photo.svg',
       portfolio:[],
       gallery:{'Волосы':[photo('Работа салона','Salon work','Salon work')]},
-      desktopGalleryLimits:{}
     },
     categoryLabels:{'Волосы':t('Волосы','Hair','Մազեր')},
     categoryOrder:['Волосы'],

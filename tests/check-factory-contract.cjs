@@ -29,7 +29,7 @@ assert(projectPrompt.includes('одним сообщением'),'the ordinary C
 assert(inputChecklist.includes('Явный список услуг из чата является окончательным источником правды'),'the input contract must keep the explicit service list authoritative');
 assert(inputChecklist.includes('salon.fullAddress')&&inputChecklist.includes('mapEmbedUrl'),'the input contract must collect full address and embedded map data');
 assert(factoryGuide.includes("country: 'RU'")&&factoryGuide.includes("locales: ['ru', 'en']"),'the factory guide must document the Russian RU/EN contract');
-for(const token of ['hero.webp','profile.webp','gallery-01.webp','team-01.webp','logo.webp','favicon-source.png']){
+for(const token of ['hero.webp','profile.webp','gallery-01.webp','gallery-XX.webp','team-01.webp','logo.webp','favicon-source.png']){
   assert(mediaRules.includes(token),`RULES.md must preserve canonical media token: ${token}`);
 }
 assert(!Object.prototype.hasOwnProperty.call(starter.media,'heroDesktop'),'starter media must not expose obsolete heroDesktop');
@@ -75,6 +75,22 @@ assert(unsafeErrors.some(error=>error.includes('booking method')),'production mo
 
 const ready=loadSiteData(path.join(root,'tests/fixtures/site-data.production.js'));
 assert.deepEqual(validateSiteData(ready,{rootDir:root,allowTestDomains:true}),[],'a complete production fixture must pass');
+
+// Gallery contract: every supplied photo must be accepted; there is no 25-photo ceiling.
+const galleryTestDir=fs.mkdtempSync(path.join(root,'.tmp-gallery-unlimited-'));
+try{
+  const manyPhotos=structuredClone(ready);
+  const galleryAlt=ready.media.gallery['Волосы'][0].alt;
+  manyPhotos.media.gallery={'Проверка':Array.from({length:40},(_,index)=>{
+    const filename='photo-'+String(index+1).padStart(2,'0')+'.svg';
+    fs.writeFileSync(path.join(galleryTestDir,filename),'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>');
+    return {src:path.relative(root,path.join(galleryTestDir,filename)),alt:structuredClone(galleryAlt)};
+  })};
+  assert.deepEqual(validateSiteData(manyPhotos,{rootDir:root,allowTestDomains:true}),[],
+    '40 unique gallery photos must be accepted without a fixed upper limit');
+}finally{
+  fs.rmSync(galleryTestDir,{recursive:true,force:true});
+}
 assert(validateSiteData(ready,{rootDir:root}).some(error=>error.includes('test domain')),'test domains must never pass a real client release');
 const duplicatedAddress=structuredClone(ready);
 duplicatedAddress.salon.address.ru='Ереван, ул. Абовяна, 12';
@@ -129,6 +145,8 @@ assert(index.includes('site-runtime.js'),'the production hydration runtime must 
 assert(index.includes("matchMedia('(min-width:1024px)').matches"),'wide touch devices must use the desktop layout');
 assert(index.includes('(hover:hover) and (pointer:fine), (min-width:1024px)'),'wide touch devices must receive desktop styles');
 assert(desktop.includes('SITE.services.filter'),'desktop services must come from the unified source');
+assert(!desktop.includes('desktopGalleryLimits')&&!desktop.includes('items.slice(0,limit)'),
+  'desktop gallery must render every configured photo without category limits');
 assert(desktop.includes('DESKTOP_SERVICE_TABS.length<=5'),'desktop must stretch All plus up to four real categories');
 assert(mobile.includes('SITE.services.map'),'mobile services must come from the unified source');
 assert(mobile.includes("SERVICE_CATS.length===2"),'mobile must stretch exactly two service categories');
