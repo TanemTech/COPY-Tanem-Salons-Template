@@ -151,6 +151,11 @@ def compare(a: bytes, b: bytes, filename: str):
         limit = 0.07
     elif filename.startswith("mobile-") and filename.endswith("-gallery-category"):
         limit = 0.035
+    elif filename.startswith("desktop-") and filename.endswith("-gallery-open"):
+        # The unlimited-gallery change intentionally adds every configured
+        # thumbnail to the desktop browser; verify the layout with browser
+        # geometry checks rather than treating the extra tiles as a regression.
+        limit = 0.02
     elif filename.startswith("mobile-") and filename.endswith("-hero"):
         limit = 0.02
     else:
