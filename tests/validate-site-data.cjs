@@ -303,7 +303,8 @@ function main(){
   const input=args.find(argument=>!argument.startsWith('--'))||'site-data.js';
   let data;
   try{data=loadSiteData(input)}catch(error){console.error(`FAIL: ${error.message}`);process.exitCode=1;return}
-  const isFixture=path.resolve(input)===path.resolve(__dirname,'fixtures/site-data.production.js');
+  const fixtureRoot=path.resolve(__dirname,'fixtures')+path.sep;
+  const isFixture=path.resolve(input).startsWith(fixtureRoot);
   const errors=validateSiteData(data,{rootDir:process.cwd(),allowTestDomains:isFixture});
   if(requireProduction&&data.mode!=='production')errors.unshift('mode: must equal production for a release check');
   if(errors.length){
