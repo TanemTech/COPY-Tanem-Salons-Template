@@ -27,7 +27,7 @@ def localized(value, language):
 def verify_catalogue_expansion(page, data, desktop):
     categories = data.get("categoryOrder") or list(data.get("categoryLabels", {}).keys())
     selector = "#stdServiceList .dct-service-card" if desktop else "#tn13Services .tn31-service-row"
-    more_selector = "#stdServiceMore" if desktop else "#tn31More"
+    more_selector = "#stdServiceMore" if desktop else "#tn13Services .tn31-service-more"
     for category in categories:
         services = [item for item in data.get("services", []) if item.get("category") == category]
         if len(services) <= 8:
