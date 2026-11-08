@@ -40,7 +40,7 @@
 
       about:'tests/fixtures/photo.svg',
       portfolio:[],
-      gallery:{'Волосы':[photo('Работа салона','Salon work','Salon work')]}
+      gallery:{'Волосы':Array.from({length:30},(_,index)=>photo('Работа салона '+(index+1),'Salon work '+(index+1),'Աշխատանք '+(index+1)))}
     },
     categoryLabels:{'Волосы':t('Волосы','Hair','Մազեր')},
     categoryOrder:['Волосы'],
@@ -68,7 +68,7 @@
       about:t('Анна работает с окрашиванием и уходом за волосами.','Anna specializes in coloring and hair care.','Աննան մասնագիտացած է ներկման և մազերի խնամքի մեջ։'),
       photo:photo('Портрет Анны','Anna portrait','Աննայի դիմանկար'),
       categories:['Волосы'],serviceIds:['haircut','care'],
-      work:[photo('Работа Анны','Anna work','Աննայի աշխատանք')],
+      work:Array.from({length:10},(_,index)=>photo('Работа Анны '+(index+1),'Anna work '+(index+1),'Աննայի աշխատանք '+(index+1))),
       reviewIds:['review-anna']
     }],
     reviews:[{
