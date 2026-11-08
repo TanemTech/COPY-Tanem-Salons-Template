@@ -133,7 +133,32 @@ def verify_master_profile(page, data, desktop, language):
     assert actual_work == expected_work, (
         f"Master portfolio preview: {actual_work}, expected {expected_work}")
     if work_count:
-        assert profile.locator("[data-master-gallery]").count() == 1, "Master profile must offer the full category gallery"
+        gallery_button = profile.locator("[data-master-gallery]")
+        assert gallery_button.count() == 1, "Master profile must offer the full category gallery"
+        work_categories = [
+            "Ногти" if category in ("Маникюр", "Педикюр") else category
+            for category in (master.get("categories") or [])
+        ]
+        if master.get("work") and isinstance(master["work"][0], dict) and master["work"][0].get("category"):
+            gallery_category = master["work"][0]["category"]
+        else:
+            gallery_category = work_categories[0] if work_categories else "Салон"
+        expected_gallery = len(data.get("media", {}).get("gallery", {}).get(gallery_category, []))
+        if expected_gallery:
+            gallery_button.click(timeout=9000)
+            gallery_selector = "#stdGalleryBrowser.open" if desktop else "#tn13Gallery.open"
+            page.locator(gallery_selector).wait_for(state="visible", timeout=9000)
+            tiles = page.locator("#stdGalleryBrowser .std-gallery-browser-tile" if desktop
+                                 else "#tn13Gallery .tn22-gallery-tile")
+            assert tiles.count() == expected_gallery, (
+                f"Full master category gallery: {tiles.count()}, expected all {expected_gallery} photos")
+            back = page.locator("#stdGalleryBrowserBack" if desktop else "#tn13Gallery .tn22-gallery-back")
+            back.click(timeout=9000)
+            page.wait_for_function(
+                "(selector) => !document.querySelector(selector)?.classList.contains('open')",
+                arg="#stdGalleryBrowser" if desktop else "#tn13Gallery",
+                timeout=9000
+            )
 
     close = page.locator("#stdMasterPageClose" if desktop else ".tn22-back")
     close.click(timeout=9000)
