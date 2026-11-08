@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'refactor/**'
+      - 'work/**'
   pull_request:
     branches:
       - main
