@@ -160,6 +160,9 @@ def verify_master_profile(page, data, desktop, language):
     actual_work = profile.locator("[data-master-work]").count()
     assert actual_work == expected_work, (
         f"Master portfolio preview: {actual_work}, expected {expected_work}")
+    note_count = profile.locator(".tanem-master-gallery-note").count()
+    assert note_count == (0 if master.get("work") else (1 if work_count else 0)), (
+        "Only studio-category fallback photos may be labeled as studio examples")
     if work_count:
         gallery_button = profile.locator("[data-master-gallery]")
         assert gallery_button.count() == 1, "Master profile must offer the full category gallery"
