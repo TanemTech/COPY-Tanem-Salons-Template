@@ -797,7 +797,7 @@
     serviceTabs.closest('.mct-tabs')?.classList.toggle('is-many',!compact);
     serviceTabs.style.setProperty('--salon-service-tab-count',String(DESKTOP_SERVICE_TABS.length));
     serviceTabs.innerHTML=DESKTOP_SERVICE_TABS.map(cat=>
-      '<button class="mct-tab'++(cat===activeServiceCategory?' is-active':'')+'" type="button" role="tab" aria-selected="'+(cat===activeServiceCategory?'true':'false')+'" data-service-category="'+cat+'">'+cat+'</button>'
+      '<button class="mct-tab'+(cat===activeServiceCategory?' is-active':'')+'" type="button" role="tab" aria-selected="'+(cat===activeServiceCategory?'true':'false')+'" data-service-category="'+cat+'">'+cat+'</button>'
     ).join('');
 
     serviceTabs.querySelectorAll('[data-service-category]').forEach(btn=>btn.onclick=()=>{
