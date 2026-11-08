@@ -199,10 +199,10 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
       if(!categories.has(service.category))add(`${field}.category`,'must exist in categoryLabels');
       if(!data.categoryOrder?.includes(service.category))add(`${field}.category`,'must also exist in categoryOrder');
       local(service.title,`${field}.title`,{required:true});
-      local(service.price,`${field}.price`);
-      local(service.duration,`${field}.duration`);
-      local(service.description,`${field}.description`);
-      local(service.optionsLabel,`${field}.optionsLabel`);
+      if(service.price!==undefined)local(service.price,`${field}.price`);
+      if(service.duration!==undefined)local(service.duration,`${field}.duration`);
+      if(service.description!==undefined)local(service.description,`${field}.description`);
+      if(service.optionsLabel!==undefined)local(service.optionsLabel,`${field}.optionsLabel`);
       if(service.variantType!==undefined)string(service.variantType,`${field}.variantType`);
       if(service.variantType&&service.variantType!=='length'&&!service.optionsLabel)
         add(`${field}.optionsLabel`,'must be supplied for a custom variant type');
@@ -210,8 +210,8 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
         const variantField=`${field}.variants[${variantIndex}]`;
         if(!object(variant,variantField))return;
         local(variant.label,`${variantField}.label`,{required:true});
-        local(variant.duration,`${variantField}.duration`);
-        local(variant.price,`${variantField}.price`);
+        if(variant.duration!==undefined)local(variant.duration,`${variantField}.duration`);
+        if(variant.price!==undefined)local(variant.price,`${variantField}.price`);
       });
     });
   }
