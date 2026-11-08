@@ -74,13 +74,23 @@
       photo:photo('Портрет Анны','Anna portrait','Աննայի դիմանկար'),
       categories:['Волосы'],serviceIds:['haircut','care'],
       work:Array.from({length:10},(_,index)=>photo('Работа Анны '+(index+1),'Anna work '+(index+1),'Աննայի աշխատանք '+(index+1))),
-      reviewIds:['review-anna']
+      reviewIds:['review-anna',...Array.from({length:8},(_,index)=>'review-extra-'+(index+1))]
     }],
-    reviews:[{
-      id:'review-anna',author:t('Анна','Anna','Աննա'),
-      text:t('Очень аккуратно и спокойно.','Very attentive and calm.','Շատ ուշադիր և հանգիստ։'),
-      rating:5,source:t('Google','Google','Google'),url:'https://example.com/reviews/lumen/anna'
-    }],
+    reviews:[
+      {
+        id:'review-anna',author:t('Анна','Anna','Աննա'),
+        text:t('Очень аккуратно и спокойно.','Very attentive and calm.','Շատ ուշադիր և հանգիստ։'),
+        rating:5,source:t('Google','Google','Google'),url:'https://example.com/reviews/lumen/anna'
+      },
+      ...Array.from({length:8},(_,index)=>({
+        id:'review-extra-'+(index+1),
+        author:t(['Мария','Ольга','Елена','Ирина','Наталья','Светлана','Алина','Дарья'][index],
+                 ['Maria','Olga','Elena','Irina','Natalia','Svetlana','Alina','Daria'][index],
+                 ['Մարիա','Օլգա','Ելենա','Իրինա','Նատալյա','Սվետլանա','Ալինա','Դարիա'][index]),
+        text:t('Спасибо за внимательное отношение и отличный результат.','Thank you for the care and excellent result.','Շնորհակալություն ուշադիր վերաբերմունքի և հիանալի արդյունքի համար։'),
+        rating:5,source:t('Google','Google','Google'),url:'https://example.com/reviews/lumen/extra-'+(index+1),preview:true
+      }))
+    ],
     masterReviews:{enabled:true}
   };
   const localizedRows=[];
