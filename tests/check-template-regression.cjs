@@ -5,7 +5,7 @@ function verifyTemplate(){
   const {retiredClasses,retiredIds,selectorUsesRetiredHook,atRuleUsesRetiredHook}=require("../scripts/style-cleanup-config.cjs");
   const baseline="79ea1c63864627b634528c6c6f39c997226f85c4";
   const paths=["desktop.js","mobile.js"];
-  const runtimeSource=["index.html","desktop.js","mobile.js","site-runtime.js","site-regions.js"].map(name=>fs.readFileSync(name,"utf8")).join("\n");
+  const runtimeSource=["index.html","desktop.js","mobile.js","site-runtime.js","site-regions.js","site-services.js"].map(name=>fs.readFileSync(name,"utf8")).join("\n");
   for(const hook of [...retiredClasses,...retiredIds])assert(!runtimeSource.includes(hook),"Retired style hook is active again: "+hook);
   function styles(src){
     const rx=/\.textContent\s*=\s*(String\.raw)?([`"])/g;let m,res=[];
@@ -130,6 +130,7 @@ function verifyTemplate(){
   }
   const index=fs.readFileSync("index.html","utf8");
   assert(index.includes("desktop.js")&&index.includes("mobile.js"),"Both device bundles must still load");
+  assert(index.includes("site-services.js"),"The shared service renderer must load before the device bundles");
   cp.execFileSync(process.execPath,["scripts/prune-dead-css.cjs","--check"],{stdio:"inherit"});
   console.log("PASS: All static baseline and service-contract checks");
 }
