@@ -78,8 +78,7 @@
         'Ногти':Array.from({length:10},placeholderWork),
         'Волосы':Array.from({length:9},placeholderWork),
         'Макияж':Array.from({length:3},placeholderWork)
-      },
-      desktopGalleryLimits:{'Салон':2,'Ногти':9,'Волосы':7,'Макияж':3}
+      }
     },
     categoryLabels,
     categoryOrder:['Волосы','Маникюр','Брови и ресницы','Эпиляция'],
