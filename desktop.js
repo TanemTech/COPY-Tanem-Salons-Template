@@ -762,9 +762,7 @@
   }
 
   function currentTemplateServiceState(){
-    const groups=activeServiceCategory==='Все'
-      ? SERVICE_CATEGORIES.map(cat=>({id:cat,label:cat,services:SERVICE_DATA[cat]||[]}))
-      : SERVICE_CATEGORIES.filter(cat=>cat===activeServiceCategory).map(cat=>({id:cat,label:cat,services:SERVICE_DATA[cat]||[]}));
+    const groups=SERVICE_CATEGORIES.filter(cat=>cat===activeServiceCategory).map(cat=>({id:cat,label:cat,services:SERVICE_DATA[cat]||[]}));
 
     const total=groups.reduce((sum,group)=>sum+group.services.length,0);
     if(desktopServicesExpanded||total<=SERVICE_PREVIEW_LIMIT){
@@ -790,7 +788,7 @@
   }
 
   function renderDesktopServices(){
-    // “All” plus up to four real categories share the full available width.
+    // Up to five real categories share the full available width.
     // Keep the original blurred scrolling rail for five or more real categories.
     const ribbon=serviceTabs.closest('.mct-tabs-ribbon-wrap');
     const compact=DESKTOP_SERVICE_TABS.length<=5;
@@ -799,7 +797,7 @@
     serviceTabs.closest('.mct-tabs')?.classList.toggle('is-many',!compact);
     serviceTabs.style.setProperty('--salon-service-tab-count',String(DESKTOP_SERVICE_TABS.length));
     serviceTabs.innerHTML=DESKTOP_SERVICE_TABS.map(cat=>
-      '<button class="mct-tab'+(cat==='Все'?' mct-tab-all':'')+(cat===activeServiceCategory?' is-active':'')+'" type="button" role="tab" aria-selected="'+(cat===activeServiceCategory?'true':'false')+'" data-service-category="'+cat+'">'+cat+'</button>'
+      '<button class="mct-tab'++(cat===activeServiceCategory?' is-active':'')+'" type="button" role="tab" aria-selected="'+(cat===activeServiceCategory?'true':'false')+'" data-service-category="'+cat+'">'+cat+'</button>'
     ).join('');
 
     serviceTabs.querySelectorAll('[data-service-category]').forEach(btn=>btn.onclick=()=>{
@@ -815,12 +813,7 @@
     });
 
     const state=currentTemplateServiceState();
-    serviceList.innerHTML=state.groups.map(group=>{
-      const heading=activeServiceCategory==='Все'
-        ? '<div class="dct-service-category-heading"><span>'+group.label+'</span><i aria-hidden="true"></i></div>'
-        : '';
-      return '<section class="dct-service-category">'+heading+'<div class="dct-service-category-list">'+group.services.map(clientServiceCard).join('')+'</div></section>';
-    }).join('');
+    serviceList.innerHTML=state.groups.map(group=>'<section class="dct-service-category"><div class="dct-service-category-list">'+group.services.map(clientServiceCard).join('')+'</div></section>').join('');
 
     bindDesktopServiceControls(serviceList);
 
@@ -921,9 +914,7 @@
     desktopSavedScrollAnchor=null;
   }
   function makeDesktopExtraServices(){
-    const groups=activeServiceCategory==='Все'
-      ? SERVICE_CATEGORIES.map(cat=>({id:cat,label:cat,services:SERVICE_DATA[cat]||[]}))
-      : SERVICE_CATEGORIES.filter(cat=>cat===activeServiceCategory).map(cat=>({id:cat,label:cat,services:SERVICE_DATA[cat]||[]}));
+    const groups=SERVICE_CATEGORIES.filter(cat=>cat===activeServiceCategory).map(cat=>({id:cat,label:cat,services:SERVICE_DATA[cat]||[]}));
     let shown=SERVICE_PREVIEW_LIMIT;
     const sections=[];
     groups.forEach(group=>{
@@ -932,15 +923,7 @@
       const extra=group.services.slice(already);
       if(!extra.length)return;
       const cards=extra.map(clientServiceCard).join('');
-      if(already){
-        sections.push('<div class="dct-service-category-list dct-service-extra-cards">'+cards+'</div>');
-      }else{
-        const heading=activeServiceCategory==='Все'
-          ? '<div class="dct-service-category-heading"><span>'+group.label+'</span><i aria-hidden="true"></i></div>'
-          : '';
-        sections.push('<section class="dct-service-category">'+heading+
-          '<div class="dct-service-category-list">'+cards+'</div></section>');
-      }
+      sections.push('<div class="dct-service-category-list dct-service-extra-cards">'+cards+'</div>');
     });
     return sections.join('');
   }
