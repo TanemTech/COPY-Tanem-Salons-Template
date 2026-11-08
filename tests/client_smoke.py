@@ -14,6 +14,131 @@ def must_equal(locator, expected, label):
     assert actual == expected, f"{label}: {actual!r} instead of {expected!r}"
 
 
+
+def localized(value, language):
+    if isinstance(value, dict):
+        if language in value and value[language] is not None:
+            return value[language]
+        return value.get("ru") or value.get("en") or ""
+    return value or ""
+
+
+def verify_catalogue_variants(page, data, desktop, language):
+    services = data.get("services", [])
+    categories = data.get("categoryOrder") or list(data.get("categoryLabels", {}).keys())
+    for category in categories:
+        category_services = [item for item in services if item.get("category") == category]
+        for service in category_services[:8]:
+            variants = service.get("variants") or []
+            if not variants:
+                continue
+            tab = (page.locator('#stdServiceTabs [data-service-category="' + category + '"]')
+                   if desktop else page.locator('#tn13Services [data-scat="' + category + '"]'))
+            if tab.count():
+                tab.first.click(timeout=9000)
+                page.wait_for_timeout(100)
+            card = page.locator('[data-tanem-service-id="' + service["id"] + '"]').first
+            if not card.count():
+                continue
+            summary = card.locator(".tanem-service-options summary")
+            if not summary.count():
+                continue
+            summary.click(timeout=9000)
+            details = card.locator(".tanem-service-options")
+            assert details.evaluate("(node) => node.open"), "Variant options did not open"
+            expected_rows = len(variants)
+            actual_rows = card.locator(".tanem-service-tariffs > div").count()
+            assert actual_rows == expected_rows, (
+                f"Variant rows for {service['id']}: {actual_rows}, expected {expected_rows}")
+            expected_durations = sum(
+                1 for variant in variants
+                if str(localized(variant.get("duration"), language)).strip()
+                and str(localized(variant.get("duration"), language)).strip() not in ("—", "-", "n/a")
+            )
+            actual_durations = card.locator(".tanem-service-variant-duration").count()
+            assert actual_durations == expected_durations, (
+                f"Variant durations for {service['id']}: {actual_durations}, expected {expected_durations}")
+            summary.click(timeout=9000)
+            return
+    if any(item.get("variants") for item in services):
+        raise AssertionError("Variant services exist but no visible category card could be exercised")
+
+
+def verify_master_profile(page, data, desktop, language):
+    team = data.get("team") or []
+    if not team:
+        return
+    selector = "#salonDesktopTeam [data-desktop-master]" if desktop else "#tn13Team [data-mid]"
+    cards = page.locator(selector)
+    assert cards.count() == len(team), "Rendered team cards do not match production team data"
+    if desktop:
+        controls = page.locator("#salonDesktopTeam .tanem-team-controls")
+        assert controls.count() == (1 if len(team) > 4 else 0), "Desktop team paging must activate only above four masters"
+    trigger = cards.first
+    master_id = trigger.get_attribute("data-desktop-master" if desktop else "data-mid")
+    master = next((item for item in team if item.get("id") == master_id), None)
+    assert master is not None, "Team card does not map to a master data object"
+    trigger.click(timeout=9000)
+    overlay_selector = "#stdMasterOverlay.open" if desktop else ".tn22-master-page.open"
+    page.locator(overlay_selector).wait_for(state="visible", timeout=9000)
+    profile = page.locator("#stdMasterPageContent" if desktop else ".tn22-master-body")
+    for section in ("about", "services", "portfolio", "reviews"):
+        assert profile.locator("#tanem-master-" + section).count() == 1, (
+            f"Master profile is missing the {section} section")
+
+    service_ids = master.get("serviceIds") or []
+    if service_ids:
+        linked_services = [item for item in data.get("services", []) if item.get("id") in service_ids]
+    else:
+        categories = set(master.get("categories") or [])
+        linked_services = [item for item in data.get("services", []) if item.get("category") in categories]
+    visible_services = profile.locator("[data-tanem-service-id]").count()
+    assert visible_services == min(6, len(linked_services)), (
+        f"Master profile service preview: {visible_services}, expected {min(6, len(linked_services))}")
+    if len(linked_services) > 6:
+        more = profile.locator("[data-master-expand]")
+        assert more.count() == 1, "Master profile must expose the rest of its services"
+        more.click(timeout=9000)
+        assert profile.locator("[data-tanem-service-id]").count() == len(linked_services), (
+            "Master profile did not reveal all linked services")
+
+    review_by_id = {item.get("id"): item for item in data.get("reviews", [])}
+    expected_reviews = 0
+    if data.get("masterReviews", {}).get("enabled") is True:
+        for review_id in master.get("reviewIds") or []:
+            review = review_by_id.get(review_id)
+            if review and str(localized(review.get("text"), language)).strip():
+                expected_reviews += 1
+    expected_reviews = min(9, expected_reviews)
+    actual_reviews = profile.locator(".tanem-master-review:not([data-review-duplicate])").count()
+    assert actual_reviews == expected_reviews, (
+        f"Master profile reviews: {actual_reviews}, expected {expected_reviews}")
+
+    if master.get("work"):
+        work_count = len(master["work"])
+    else:
+        gallery_categories = [
+            "Ногти" if category in ("Маникюр", "Педикюр") else category
+            for category in (master.get("categories") or [])
+        ]
+        work_count = sum(len(data.get("media", {}).get("gallery", {}).get(category, []))
+                         for category in gallery_categories)
+    expected_work = work_count if not desktop or work_count < 3 else min(9, (work_count // 3) * 3)
+    actual_work = profile.locator("[data-master-work]").count()
+    assert actual_work == expected_work, (
+        f"Master portfolio preview: {actual_work}, expected {expected_work}")
+    if work_count:
+        assert profile.locator("[data-master-gallery]").count() == 1, "Master profile must offer the full category gallery"
+
+    close = page.locator("#stdMasterPageClose" if desktop else ".tn22-back")
+    close.click(timeout=9000)
+    page.wait_for_function(
+        "(selector) => !document.querySelector(selector)?.classList.contains('open')",
+        arg="#stdMasterOverlay" if desktop else ".tn22-master-page",
+        timeout=9000
+    )
+
+
 def check(browser, width, height, mobile, language):
     context = browser.new_context(
         viewport={"width": width, "height": height},
@@ -64,6 +189,8 @@ def check(browser, width, height, mobile, language):
     if not data["reviews"]:
         review_cards = page.locator("#salonDesktopReviews .std-review-card" if desktop else "#tn13Reviews .br-review-card")
         assert review_cards.count() == 0, "Empty reviews state must not invent reviews"
+    verify_catalogue_variants(page, data, desktop, language)
+    verify_master_profile(page, data, desktop, language)
     if not data["media"]["portfolio"]:
         portfolio_section = page.locator("#salonDesktopPortfolio" if desktop else "#tn13Portfolio")
         assert portfolio_section.is_hidden(), "Empty portfolio should remain optional"
