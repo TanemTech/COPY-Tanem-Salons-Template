@@ -83,6 +83,9 @@ assert.deepEqual(validateSiteData(ready,{rootDir:root,allowTestDomains:true}),[]
 const profileFixture=loadSiteData(path.join(root,'tests/fixtures/site-data.master-profile.js'));
 assert.deepEqual(validateSiteData(profileFixture,{rootDir:root,allowTestDomains:true}),[],'a populated master profile fixture must pass');
 assert.equal(profileFixture.masterReviews.enabled,true,'profile fixture must explicitly enable its verified review link');
+assert.equal(profileFixture.services.length,58,'browser fixture must exercise a catalogue larger than fifty services');
+assert.equal(profileFixture.media.gallery['Волосы'].length,30,'browser fixture must exercise a gallery larger than twenty-five photos');
+assert.equal(profileFixture.team[0].work.length,10,'browser fixture must exercise a master portfolio larger than five photos');
 
 // Stress the catalogue and gallery contract: 60+ services and more than 25 distinct photos remain valid.
 const large=structuredClone(ready);
