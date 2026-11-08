@@ -61,7 +61,12 @@
           {label:t('Короткие волосы','Short hair','Կարճ մազեր'),duration:'45 мин',price:'8 000 ֏'},
           {label:t('Длинные волосы','Long hair','Երկար մազեր'),duration:'1 ч',price:'12 000 ֏'}
         ]
-      }
+      },
+      ...Array.from({length:55},(_,index)=>({
+        id:'extra-service-'+index,category:'Волосы',
+        title:t('Дополнительная услуга '+(index+1),'Additional service '+(index+1),'Լրացուցիչ ծառայություն '+(index+1)),
+        price:'5 000 ֏',duration:'30 мин',description:t(''),variants:[]
+      }))
     ],
     team:[{
       id:'master-anna',name:t('Анна','Anna','Աննա'),role:t('Колорист','Colorist','Գունաբան'),
