@@ -480,8 +480,7 @@
       // Personal reviews appear only when the owner enables them and verifies the explicit review IDs.
       const tabs=['about','services','portfolio','reviews'];
       const name=text(master.name,lang),role=text(master.role,lang),avatar=typeof master.photo==='string'?master.photo:master.photo?.src;
-      const genitives={'Юлия':'Юлии','Эльвира':'Эльвиры','Дарья':'Дарьи','Анна':'Анны','Марина':'Марины','Олеся':'Олеси'};
-      const moreLabel=lang==='en'?'Show all services by '+name:'Показать все услуги '+(genitives[name]||name);
+      const moreLabel=lang==='en'?'Show all services':'Показать все услуги';
       const lessLabel=lang==='en'?'Collapse services':'Свернуть услуги';
       const sections=[
         '<section class="tanem-master-section" id="tanem-master-about"><h3>'+esc(words.about)+'</h3><p class="tanem-master-bio">'+esc(biography(master,lang))+'</p></section>',
@@ -531,8 +530,7 @@
       target.querySelector('[data-master-gallery]')?.addEventListener('click',event=>openWorks(0,true,event.currentTarget));
       const book=overlay.querySelector(desktop?'#stdMasterPageBook':'.tn22-master-book');
       if(book){
-        const names={'Юлия':'Юлии','Эльвира':'Эльвире','Дарья':'Дарье','Анна':'Анне','Марина':'Марине','Олеся':'Олесе'};
-        book.textContent=lang==='en'?'Book with '+name:'Записаться к '+(names[name]||name);
+        book.textContent=lang==='en'?'Book with this specialist':'Записаться к мастеру';
       }
       window.TANEM_SERVICES.enhance(target);
       const reviewTrack=target.querySelector('.tanem-master-review-track');
