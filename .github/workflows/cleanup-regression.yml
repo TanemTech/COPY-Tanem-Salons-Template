@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   compare-to-approved-template:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       production: ${{ steps.site_mode.outputs.production }}
     steps:
@@ -57,7 +57,7 @@ jobs:
 
   visual-regression:
     needs: compare-to-approved-template
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out full repository history
         uses: actions/checkout@v4
@@ -116,7 +116,7 @@ jobs:
 
   webkit-baseline-regression:
     needs: compare-to-approved-template
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out complete history for the frozen baseline
         uses: actions/checkout@v4
