@@ -269,7 +269,7 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
     local(member.about,`${field}.about`,{required:production});
     if(production||member.photo)media(member.photo,`${field}.photo`,{required:production});
     if(array(member.categories,`${field}.categories`))member.categories.forEach((category,categoryIndex)=>{if(!categories.has(category))add(`${field}.categories[${categoryIndex}]`,'must exist in categoryLabels')});
-    if(array(member.serviceIds,`${field}.serviceIds`)){
+    if(member.serviceIds!==undefined&&array(member.serviceIds,`${field}.serviceIds`)){
       const seenServices=new Set();
       member.serviceIds.forEach((id,serviceIndex)=>{
         if(!serviceIds.has(id))add(`${field}.serviceIds[${serviceIndex}]`,'must reference an existing service');
