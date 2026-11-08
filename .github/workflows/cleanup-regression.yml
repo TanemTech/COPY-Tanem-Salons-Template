@@ -86,8 +86,8 @@ jobs:
         run: |
           mkdir -p /tmp/salon-approved
           BASELINE_SHA="$(git merge-base HEAD origin/main)"
-echo "Visual baseline is current main at $BASELINE_SHA"
-git archive "$BASELINE_SHA" | tar -x -C /tmp/salon-approved
+          echo "Visual baseline is current main at $BASELINE_SHA"
+          git archive "$BASELINE_SHA" | tar -x -C /tmp/salon-approved
           python -m http.server 4173 --bind 127.0.0.1 --directory /tmp/salon-approved > /tmp/salon-approved.log 2>&1 &
           python -m http.server 4174 --bind 127.0.0.1 --directory "$GITHUB_WORKSPACE" > /tmp/salon-cleaned.log 2>&1 &
           sleep 2
@@ -147,8 +147,8 @@ git archive "$BASELINE_SHA" | tar -x -C /tmp/salon-approved
         run: |
           mkdir -p /tmp/salon-approved
           BASELINE_SHA="$(git merge-base HEAD origin/main)"
-echo "Visual baseline is current main at $BASELINE_SHA"
-git archive "$BASELINE_SHA" | tar -x -C /tmp/salon-approved
+          echo "Visual baseline is current main at $BASELINE_SHA"
+          git archive "$BASELINE_SHA" | tar -x -C /tmp/salon-approved
           python -m http.server 4173 --bind 127.0.0.1 --directory /tmp/salon-approved > /tmp/salon-approved.log 2>&1 &
           python -m http.server 4174 --bind 127.0.0.1 --directory "$GITHUB_WORKSPACE" > /tmp/salon-cleaned.log 2>&1 &
           sleep 2
