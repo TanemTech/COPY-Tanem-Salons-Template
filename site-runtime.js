@@ -476,7 +476,7 @@
       const reviewSection='<section class="tanem-master-section" id="tanem-master-reviews"><h3>'+esc(words.reviews)+'</h3>'+
         (personalReviews.length?'<div class="tanem-master-review-window"><div class="tanem-master-review-track">'+reviewCards+reviewDuplicates+'</div></div>':'<p class="tanem-master-empty">'+esc(words.emptyReviews)+'</p>')+
         '</section>';
-      // Personal reviews are withheld until approved. Keep the section visible.
+      // Personal reviews appear only when the owner enables them and verifies the explicit review IDs.
       const tabs=['about','services','portfolio','reviews'];
       const name=text(master.name,lang),role=text(master.role,lang),avatar=typeof master.photo==='string'?master.photo:master.photo?.src;
       const genitives={'Юлия':'Юлии','Эльвира':'Эльвиры','Дарья':'Дарьи','Анна':'Анны','Марина':'Марины','Олеся':'Олеси'};
