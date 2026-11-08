@@ -23,6 +23,34 @@ def localized(value, language):
     return value or ""
 
 
+
+def verify_catalogue_expansion(page, data, desktop):
+    categories = data.get("categoryOrder") or list(data.get("categoryLabels", {}).keys())
+    selector = "#stdServiceList .dct-service-card" if desktop else "#tn13Services .tn31-service-row"
+    more_selector = "#stdServiceMore" if desktop else "#tn31More"
+    for category in categories:
+        services = [item for item in data.get("services", []) if item.get("category") == category]
+        if len(services) <= 8:
+            continue
+        tab = (page.locator('#stdServiceTabs [data-service-category="' + category + '"]')
+               if desktop else page.locator('#tn13Services [data-scat="' + category + '"]'))
+        if tab.count():
+            tab.first.click(timeout=9000)
+            page.wait_for_timeout(100)
+        assert page.locator(selector).count() == 8, "Catalogue must initially preview eight services per category"
+        more = page.locator(more_selector)
+        assert more.count() == 1 and more.is_visible(), "Large categories must expose the Show more control"
+        more.click(timeout=9000)
+        page.wait_for_function(
+            "(arg) => document.querySelectorAll(arg.selector).length === arg.count",
+            arg={"selector": selector, "count": len(services)},
+            timeout=9000
+        )
+        assert page.locator(selector).count() == len(services), (
+            f"Catalogue expansion returned {page.locator(selector).count()} of {len(services)} services")
+        return
+
+
 def verify_catalogue_variants(page, data, desktop, language):
     services = data.get("services", [])
     categories = data.get("categoryOrder") or list(data.get("categoryLabels", {}).keys())
@@ -219,6 +247,7 @@ def check(browser, width, height, mobile, language):
     if not data["reviews"]:
         review_cards = page.locator("#salonDesktopReviews .std-review-card" if desktop else "#tn13Reviews .br-review-card")
         assert review_cards.count() == 0, "Empty reviews state must not invent reviews"
+    verify_catalogue_expansion(page, data, desktop)
     verify_catalogue_variants(page, data, desktop, language)
     verify_master_profile(page, data, desktop, language)
     if not data["media"]["portfolio"]:
