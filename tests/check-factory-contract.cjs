@@ -86,6 +86,7 @@ assert.equal(profileFixture.masterReviews.enabled,true,'profile fixture must exp
 assert.equal(profileFixture.services.length,58,'browser fixture must exercise a catalogue larger than fifty services');
 assert.equal(profileFixture.media.gallery['Волосы'].length,30,'browser fixture must exercise a gallery larger than twenty-five photos');
 assert.equal(profileFixture.team[0].work.length,10,'browser fixture must exercise a master portfolio larger than five photos');
+assert.equal(profileFixture.team[0].reviewIds.length,9,'browser fixture must exercise the nine-review master profile maximum');
 
 // Stress the catalogue and gallery contract: 60+ services and more than 25 distinct photos remain valid.
 const large=structuredClone(ready);
