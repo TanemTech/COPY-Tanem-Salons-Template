@@ -80,6 +80,9 @@ assert(unsafeErrors.some(error=>error.includes('booking method')),'production mo
 
 const ready=loadSiteData(path.join(root,'tests/fixtures/site-data.production.js'));
 assert.deepEqual(validateSiteData(ready,{rootDir:root,allowTestDomains:true}),[],'a complete production fixture must pass');
+const profileFixture=loadSiteData(path.join(root,'tests/fixtures/site-data.master-profile.js'));
+assert.deepEqual(validateSiteData(profileFixture,{rootDir:root,allowTestDomains:true}),[],'a populated master profile fixture must pass');
+assert.equal(profileFixture.masterReviews.enabled,true,'profile fixture must explicitly enable its verified review link');
 
 // Stress the catalogue and gallery contract: 60+ services and more than 25 distinct photos remain valid.
 const large=structuredClone(ready);
