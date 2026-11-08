@@ -1314,4 +1314,4 @@ services.insertAdjacentElement('afterend',about);
 })();
 
 /* salon-template-cold-neutral-20260924 */
-(function(){if(document.getElementById('salon-template-cold-neutral-20260924'))return;const lateCss=document.createElement('link');lateCss.id='salon-template-cold-neutral-20260924';lateCss.rel='stylesheet';lateCss.href='mobile-overrides.css?v=salon-20261003-v4';document.head.appendChild(lateCss);const paletteCss=document.createElement('link');paletteCss.id='tanem-salon-palette-v2';paletteCss.rel='stylesheet';paletteCss.href='salon-palette.css?v=eva-options-animation-final-20261107-v1';document.head.appendChild(paletteCss);})();
+(function(){if(document.getElementById('salon-template-cold-neutral-20260924'))return;const lateCss=document.createElement('link');lateCss.id='salon-template-cold-neutral-20260924';lateCss.rel='stylesheet';lateCss.href='mobile-overrides.css?v=salon-20261003-v4';document.head.appendChild(lateCss);const paletteCss=document.createElement('link');paletteCss.id='tanem-salon-palette-v2';paletteCss.rel='stylesheet';paletteCss.href='salon-palette.css?v=tanem-components-20261108-v1';document.head.appendChild(paletteCss);})();
