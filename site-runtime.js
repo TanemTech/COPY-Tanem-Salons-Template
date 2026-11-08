@@ -469,6 +469,7 @@
       renderedMasterId=master.id;renderedLang=lang;
       const items=(data.services||[]).filter(item=>master.serviceIds?.length?master.serviceIds.includes(item.id):(master.categories||[]).includes(item.category));
       const works=masterGallery(master);
+      const defaultWorkCategory=(master.categories||[]).map(category=>category==='Маникюр'||category==='Педикюр'?'Ногти':category)[0]||'Салон';
       const visibleWorks=desktop&&works.length>=3?works.slice(0,Math.min(9,Math.floor(works.length/3)*3)):works;
       const personalReviews=profileReviews(master,lang);
       const reviewCards=personalReviews.map(review=>reviewMarkup(review,lang)).join('');
@@ -523,7 +524,7 @@
       const openWorks=(index,showGallery,origin)=>{
         document.dispatchEvent(new CustomEvent('tanem:open-master-gallery',{detail:{
           items:works.map(item=>({src:item.src,alt:text(item.alt,lang)})),index,
-          category:works[index]?.category||works[0]?.category||'Салон',showGallery,origin
+          category:works[index]?.category||works[0]?.category||defaultWorkCategory,showGallery,origin
         }}));
       };
       target.querySelectorAll('[data-master-work]').forEach(button=>button.addEventListener('click',()=>openWorks(Number(button.dataset.masterWork)||0,false,button)));
