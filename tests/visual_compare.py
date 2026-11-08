@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare the cleaned salon template with the approved Git baseline in Chromium."""
+"""Compare the working salon template with current main using identical approved demo data."""
 from __future__ import annotations
 
 import argparse
@@ -149,6 +149,10 @@ def compare(a: bytes, b: bytes, filename: str):
     elif filename.endswith("-services"):
         # Approved 03.10 changes: larger tabs, 5% smaller titles, plain prices.
         limit = 0.07
+    elif filename.endswith("-gallery-open"):
+        # The approved change removes the desktop per-category photo cap.
+        # The extra complete gallery tiles are expected; the viewer geometry is checked separately.
+        limit = 0.02
     elif filename.startswith("mobile-") and filename.endswith("-gallery-category"):
         limit = 0.035
     elif filename.startswith("mobile-") and filename.endswith("-hero"):
@@ -495,8 +499,8 @@ def main():
         try:
             for w, h, mobile in cases:
                 key = f"{'mobile' if mobile else 'desktop'}-{w}"
-                baseline = capture(browser, args.baseline, key+"-approved", w, h, mobile)
-                candidate = capture(browser, args.candidate, key+"-cleaned", w, h, mobile, approved_data)
+                baseline = capture(browser, args.baseline, key+"-main", w, h, mobile, approved_data)
+                candidate = capture(browser, args.candidate, key+"-working", w, h, mobile, approved_data)
                 for item in baseline:
                     try:
                         compare(baseline[item], candidate[item], key+"-"+item)
