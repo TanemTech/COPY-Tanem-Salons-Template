@@ -232,7 +232,7 @@ function servicePriceMarkup(price){
    '<span class="tn31-money-amount">'+single[2].trim()+'</span>'+
    '<span class="tn31-money-symbol">'+single[3]+'</span></span>';
  }
- return '<span class="tn31-service-price">'+(price||'Записаться')+'</span>';
+ return '<span class="tn31-service-price">'+(price||'—')+'</span>';
 }
 function serviceLine(s){
  const t=splitServiceTitle(s.title);
