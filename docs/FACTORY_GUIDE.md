@@ -166,7 +166,7 @@ Workflow `.github/workflows/pages.yml` при push в `main`:
 Создайте **пустой** GitHub-репозиторий без автоматически созданного README. Самый безопасный путь — клонировать утверждённую release-ветку шаблона с историей, а затем сменить адрес удалённого репозитория:
 
 ```bash
-git clone --branch salons-v1-production --single-branch https://github.com/ichAEY/Shablon-only-for-salons.git CLIENT
+git clone --depth 1 https://github.com/TanemTech/COPY-Tanem-Salons-Template.git CLIENT
 cd CLIENT
 cp site-data.blank.js site-data.js
 # Заполните site-data.js и добавьте реальные изображения
@@ -175,10 +175,10 @@ node tests/validate-site-data.cjs --production
 git remote set-url origin https://github.com/OWNER/NEW_CLIENT_REPO.git
 git add site-data.js
 git commit -m "Create salon from approved TANEM template"
-git push -u origin salons-v1-production:main
+git push -u origin main
 ```
 
-В команде `git add` укажите также реальные фотографии, логотип и остальные новые файлы. Если скопировали файлы без истории, GitHub Actions автоматически получает контрольный коммит утверждённого шаблона из исходного репозитория.
+В команде `git add` укажите также реальные фотографии, логотип и остальные новые файлы. Старый `ichAEY/Shablon-only-for-salons` остаётся только источником исторического baseline для регрессионных сравнений; он не является источником клиентских файлов.
 
 **Проверка перед отправкой клиенту:** статус всех GitHub Actions зелёный; в продакшене реальные названия и фотографии на всех языках выбранной страны; короткий адрес без повторов; правильная карта по стране; услуги и цены на ПК/телефоне; связь и запись; отсутствующий мессенджер не создаёт пустой карточки. В клиентском репозитории CI сравнивает исходную разметку услуг и CSS с эталоном, а браузер открывает уже заполненный сайт.
 
