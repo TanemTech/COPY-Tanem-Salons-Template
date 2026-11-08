@@ -27,13 +27,14 @@
       messengerUrl:'',messengerLabel:t('Написать','Message','Գրել'),messengerHandle:'',
       mapUrl:'',mapEmbedUrl:'',reviewsUrl:'',booking:[]},
     rating:{value:null,count:0},
-    // Media contract: hero.webp -> hero[0], profile.webp -> about, gallery-01.webp...gallery-25.webp -> portfolio/gallery, optional transparent logo.*.
-    media:{logo:'',hero:[],about:'',portfolio:[],gallery:{},desktopGalleryLimits:{}},
+    // Media contract: hero.webp -> hero[0], profile.webp -> about, gallery-01.webp and onward -> portfolio/gallery; no artificial photo-count limit, optional transparent logo.*.
+    media:{logo:'',hero:[],about:'',portfolio:[],gallery:{}},
     categoryLabels:{},
     categoryOrder:[],
     services:[], // No demo services. Add one object per actual client service.
     team:[],
-    reviews:[]
+    reviews:[],
+    masterReviews:{enabled:false} // Turn on only after each specialist's real reviewIds are verified.
   };
   global.TANEM_SITE_DATA=data;
   const rows=[];

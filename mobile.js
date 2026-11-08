@@ -32,7 +32,7 @@
   const bookSheet=root.querySelector('#tn13BookSheet');
   const closeBook=()=>{
     bookSheet.classList.remove('open');
-    document.body.style.overflow='';
+    if(!root.querySelector('.tn22-master-page.open'))document.body.style.overflow='';
   };
   root.querySelector('#tn13BookClose').addEventListener('click',closeBook);
   bookSheet.addEventListener('click',event=>{if(event.target===bookSheet)closeBook()});
@@ -71,6 +71,7 @@ const REVIEWS_URL=SITE.contacts.reviewsUrl||'#tn13Reviews';
 const PHONE=SITE.contacts.phone||'';
 const MESSENGER_URL=SITE.contacts.messengerUrl||'#tn13Visit';
 const SERVICES=SITE.services.map(service=>({
+  id:service.id,
   cat:service.category,
   title:russian(service.title),
   price:russian(service.price),
@@ -107,7 +108,7 @@ const hero=$('#tn13Top');
 hero.innerHTML=`<div class="tn22-top"><a class="tn22-brand" href="#tn13Top">SALON NAME</a><button class="tn22-menu" type="button" aria-label="Меню"><i></i><i></i><i></i></button></div><button class="tn22-media" type="button" aria-label="Открыть галерею салона"><span class="tn22-slide active"></span><span class="tn22-slide"></span><span class="tn22-dots"><i class="active"></i><i></i></span></button><div class="tn22-card"><h1 class="tn22-title">SALON NAME</h1><div class="tn22-sub">Салон красоты</div><p class="tn22-copy">Описание салона.</p><div class="tn37-hero-info"><div class="tn37-info"><span class="tn37-info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5v5l3.2 2"></path></svg></span><span class="tn37-info-copy tn50-hero-status"><strong class="tn50-hero-status-main">Проверяем</strong><span class="tn50-hero-status-sub">режим работы</span></span></div><span class="tn37-info-divider" aria-hidden="true"></span><div class="tn37-info tn37-location"><span class="tn37-info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 10c0 5.2-7 10-7 10s-7-4.8-7-10a7 7 0 1 1 14 0Z"></path><circle cx="12" cy="10" r="2.2"></circle></svg></span><span class="tn37-info-copy"><strong>Город,</strong>Адрес салона</span></div></div><button class="tn22-cta" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2.2"></rect><path d="M8 3.5v4M16 3.5v4M4 9.5h16M8 13h.01M12 13h.01M16 13h.01M8 16h.01M12 16h.01"></path></svg><span>Записаться</span></button><a class="tn22-worklink" href="#tn13Portfolio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 .9 3.1L16 7l-3.1.9L12 11l-.9-3.1L8 7l3.1-.9L12 3ZM6 13l.7 2.3L9 16l-2.3.7L6 19l-.7-2.3L3 16l2.3-.7L6 13ZM17.5 12l.8 2.7 2.7.8-2.7.8-.8 2.7-.8-2.7-2.7-.8 2.7-.8.8-2.7Z"></path></svg><span>Смотреть работы</span></a></div>`;
 hero.querySelector('.tn22-cta').addEventListener('click',book);
 const menuButton=hero.querySelector('.tn22-menu');
-const navPop=document.createElement('nav');navPop.className='tn22-navpop';navPop.innerHTML='<a href="#tn13Portfolio">Портфолио</a><a href="#tn13Services">Услуги</a><a href="#tn38About">О нас</a><a href="#tn13Team">Команда</a><a href="#tn13Reviews">Отзывы</a><a href="#tn13Visit">Контакты</a>';hero.querySelector('.tn22-top').appendChild(navPop);menuButton.addEventListener('click',e=>{e.stopPropagation();navPop.classList.toggle('open')});navPop.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>navPop.classList.remove('open')));document.addEventListener('pointerdown',e=>{if(!e.target.closest('.tn22-top'))navPop.classList.remove('open')});
+const navPop=document.createElement('nav');navPop.className='tn22-navpop';navPop.innerHTML='<a href="#tn13Services">Услуги</a><a href="#tn13Portfolio">Наши работы</a><a href="#tn38About">О нас</a><a href="#tn13Team">Команда</a><a href="#tn13Reviews">Отзывы</a><a href="#tn13Visit">Контакты</a>';hero.querySelector('.tn22-top').appendChild(navPop);menuButton.addEventListener('click',e=>{e.stopPropagation();navPop.classList.toggle('open')});navPop.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>navPop.classList.remove('open')));document.addEventListener('pointerdown',e=>{if(!e.target.closest('.tn22-top'))navPop.classList.remove('open')});
 let slide=0; const slides=[...hero.querySelectorAll('.tn22-slide')],dots=[...hero.querySelectorAll('.tn22-dots i')];
 function setHeroSlide(i){slide=(i+slides.length)%slides.length;slides.forEach((x,j)=>x.classList.toggle('active',j===slide));dots.forEach((x,j)=>x.classList.toggle('active',j===slide));}
 const heroMedia=hero.querySelector('.tn22-media');let heroStartX=0,heroMoved=false,heroPointer=null;
@@ -126,22 +127,52 @@ function clampViewerPan(){if(viewerScale<=1){viewerX=0;viewerY=0;return}const ma
 function applyViewerTransform(){clampViewerPan();vImg.style.transform=`translate3d(${viewerX}px,${viewerY}px,0) scale(${viewerScale})`}
 function resetViewerTransform(){viewerScale=1;viewerX=0;viewerY=0;pinchStart=0;pinchBaseScale=1;applyViewerTransform()}
 function paintViewer(){const it=viewerItems[viewerIndex];if(!it)return;vImg.src=it.src;vImg.alt=it.alt||'';vCount.textContent=`${String(viewerIndex+1).padStart(2,'0')} из ${String(viewerItems.length).padStart(2,'0')}`;resetViewerTransform();vPrev.hidden=viewerItems.length<2;vNext.hidden=viewerItems.length<2;}
-function openViewer(items,index=0,source='gallery'){viewerItems=Array.isArray(items)?items:[];if(!viewerItems.length)return;viewer.dataset.source=source;const galleryButton=viewer.querySelector('.tn22-view-gallery');if(galleryButton)galleryButton.hidden=source!=='portfolio';viewerIndex=Math.max(0,Math.min(index,viewerItems.length-1));paintViewer();viewer.classList.add('open');document.body.style.overflow='hidden'}
+function openViewer(items,index=0,source='gallery'){viewerItems=Array.isArray(items)?items:[];if(!viewerItems.length)return;viewer.dataset.source=source;const galleryButton=viewer.querySelector('.tn22-view-gallery');if(galleryButton)galleryButton.hidden=source!=='portfolio'&&source!=='master';viewerIndex=Math.max(0,Math.min(index,viewerItems.length-1));paintViewer();viewer.classList.add('open');document.body.style.overflow='hidden'}
 function closeViewer(){viewer.classList.remove('open');resetViewerTransform();if(!$('#tn13Gallery').classList.contains('open')&&!masterPage.classList.contains('open'))document.body.style.overflow=''}
-vPrev.onclick=()=>{viewerIndex=(viewerIndex-1+viewerItems.length)%viewerItems.length;paintViewer()};vNext.onclick=()=>{viewerIndex=(viewerIndex+1)%viewerItems.length;paintViewer()};viewer.querySelector('.tn22-view-close').onclick=closeViewer;viewer.querySelector('.tn22-view-gallery').onclick=e=>{const origin=e.currentTarget.getBoundingClientRect();closeViewer();openGallery('Салон',origin)};viewer.addEventListener('click',e=>{if(e.target===viewer)closeViewer()});
+vPrev.onclick=()=>{viewerIndex=(viewerIndex-1+viewerItems.length)%viewerItems.length;paintViewer()};vNext.onclick=()=>{viewerIndex=(viewerIndex+1)%viewerItems.length;paintViewer()};viewer.querySelector('.tn22-view-close').onclick=closeViewer;viewer.querySelector('.tn22-view-gallery').onclick=e=>{const origin=e.currentTarget.getBoundingClientRect();const context=viewer.dataset.source==='master'?masterGalleryContext:null;closeViewer();openGallery(context?.category||'Салон',origin)};viewer.addEventListener('click',e=>{if(e.target===viewer)closeViewer()});
+let masterGalleryContext=null;
+document.addEventListener('tanem:open-master-gallery',event=>{
+ const {items,index,category,showGallery,origin}=event.detail||{};
+ if(!Array.isArray(items)||!items.length)return;
+ masterGalleryContext={items,category};
+ if(showGallery)openGallery(category,origin);
+ else openViewer(items,index||0,'master');
+});
 vCanvas.addEventListener('touchstart',e=>{if(e.touches.length===2){e.preventDefault();gestureHadPinch=true;pinchStart=pinchDist(e);pinchBaseScale=viewerScale}else if(e.touches.length===1){sx=e.touches[0].clientX;sy=e.touches[0].clientY;panStartX=viewerX;panStartY=viewerY}},{passive:false});
 vCanvas.addEventListener('touchmove',e=>{if(e.touches.length===2&&pinchStart){e.preventDefault();viewerScale=Math.max(1,Math.min(4,pinchBaseScale*(pinchDist(e)/pinchStart)));if(viewerScale<=1.01){viewerScale=1;viewerX=0;viewerY=0}applyViewerTransform()}else if(e.touches.length===1&&viewerScale>1){e.preventDefault();viewerX=panStartX+(e.touches[0].clientX-sx);viewerY=panStartY+(e.touches[0].clientY-sy);applyViewerTransform()}},{passive:false});
 vCanvas.addEventListener('touchend',e=>{if(e.touches.length<2)pinchStart=0;if(e.touches.length===0){if(!gestureHadPinch&&viewerScale===1&&viewerItems.length>1&&e.changedTouches.length){const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.15)(dx<0?vNext:vPrev).click()}gestureHadPinch=false;if(viewerScale<=1.01)resetViewerTransform()}},{passive:false});
 
 // GALLERY
-const gallery=$('#tn13Gallery');let galleryCat='Салон';
+const gallery=$('#tn13Gallery');let galleryCat='Салон',galleryScopeItems=null;
 function renderGallery(){
- const items=GALLERY[galleryCat]||[];
+ const items=galleryScopeItems||GALLERY[galleryCat]||[];
  const categories=Object.keys(GALLERY);
- gallery.innerHTML=`<div class="tn22-gallery"><div class="tn22-gallery-top"><button class="tn22-gallery-back" type="button">←</button><div class="tn22-gallery-title"><strong>${["en","hy"].includes(document.body.dataset.brLang)?"Gallery":"Галерея"}</strong><span>SALON NAME</span></div><div></div></div><div class="tn22-gallery-tabs-wrap"><div class="tn22-gallery-tabs">${categories.map(c=>`<button class="tn22-gallery-tab${c===galleryCat?' active':''}" type="button" data-gcat="${c}">${c}</button>`).join('')}</div></div><div class="tn22-gallery-grid${galleryCat==='Салон'?' salon':''}">${items.length?items.map((x,i)=>`<button class="tn22-gallery-tile" type="button" data-gi="${i}"><img loading="lazy" decoding="async" src="${x.src}" alt="${x.alt}"></button>`).join(''):'<div class="tn23-gallery-empty">Фотографии пока не добавлены</div>'}</div></div>`;
- gallery.querySelector('.tn22-gallery-back').onclick=closeGallery;
- gallery.querySelectorAll('[data-gcat]').forEach(b=>b.onclick=()=>{galleryCat=b.dataset.gcat;renderGallery()});
- gallery.querySelectorAll('[data-gi]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();openViewer(items,+b.dataset.gi,'gallery')});
+ // Keep the category rail mounted between selections so its horizontal scroll
+ // is not reset on long names such as "Перманентный макияж".
+ if(!gallery.querySelector('.tn22-gallery-tabs')){
+  gallery.innerHTML=`<div class="tn22-gallery"><div class="tn22-gallery-top"><button class="tn22-gallery-back" type="button">←</button><div class="tn22-gallery-title"><strong>${["en","hy"].includes(document.body.dataset.brLang)?"Gallery":"Галерея"}</strong><span>SALON NAME</span></div><div></div></div><div class="tn22-gallery-tabs-wrap"><div class="tn22-gallery-tabs">${categories.map(c=>`<button class="tn22-gallery-tab" type="button" data-gcat="${c}">${c}</button>`).join('')}</div></div><div class="tn22-gallery-grid"></div></div>`;
+  gallery.querySelector('.tn22-gallery-back').onclick=closeGallery;
+  gallery.querySelector('.tn22-gallery-tabs').onclick=e=>{
+   const tab=e.target.closest('[data-gcat]');
+   if(!tab)return;
+   galleryCat=tab.dataset.gcat;
+   renderGallery();
+  };
+  gallery.querySelector('.tn22-gallery-grid').onclick=e=>{
+   const tile=e.target.closest('[data-gi]');
+   if(!tile)return;
+   e.preventDefault();e.stopPropagation();
+   openViewer(galleryScopeItems||GALLERY[galleryCat]||[],Number(tile.dataset.gi)||0,'gallery');
+  };
+ }
+ const galleryLang=document.body.dataset.brLang==='en'?'en':'ru';
+ const salonName=SITE.salon.name;
+ gallery.querySelector('.tn22-gallery-title span').textContent=typeof salonName==='string'?salonName:(salonName[galleryLang]||salonName.ru||salonName.en||'');
+ gallery.querySelector('.tn22-gallery-tabs-wrap').hidden=!!galleryScopeItems;
+ gallery.querySelectorAll('[data-gcat]').forEach(tab=>tab.classList.toggle('active',tab.dataset.gcat===galleryCat));
+ const grid=gallery.querySelector('.tn22-gallery-grid');
+ grid.classList.toggle('salon',galleryCat==='Салон');
+ grid.innerHTML=items.length?items.map((x,i)=>`<button class="tn22-gallery-tile" type="button" data-gi="${i}"><img loading="lazy" decoding="async" src="${x.src}" alt="${x.alt}"></button>`).join(''):'<div class="tn23-gallery-empty">Фотографии пока не добавлены</div>';
 }
 let galleryCloseTimer=0;
 function setGalleryOrigin(origin){
@@ -152,12 +183,12 @@ function setGalleryOrigin(origin){
  gallery.style.setProperty('--gallery-origin-x',x+'%');
  gallery.style.setProperty('--gallery-origin-y',y+'%');
 }
-function openGallery(cat='Салон',origin=null){clearTimeout(galleryCloseTimer);galleryCat=Object.prototype.hasOwnProperty.call(GALLERY,cat)?cat:'Салон';setGalleryOrigin(origin);renderGallery();gallery.classList.remove('closing');gallery.scrollTop=0;requestAnimationFrame(()=>gallery.classList.add('open'))}
+function openGallery(cat='Салон',origin=null,scopedItems=null){clearTimeout(galleryCloseTimer);galleryScopeItems=scopedItems;galleryCat=Object.prototype.hasOwnProperty.call(GALLERY,cat)?cat:'Салон';setGalleryOrigin(origin);renderGallery();gallery.classList.remove('closing');gallery.scrollTop=0;requestAnimationFrame(()=>gallery.classList.add('open'))}
 function closeGallery(){if(!gallery.classList.contains('open'))return;clearTimeout(galleryCloseTimer);gallery.classList.remove('open');gallery.classList.add('closing');galleryCloseTimer=setTimeout(()=>gallery.classList.remove('closing'),520)}
 const heroWorksLink=hero.querySelector('.tn22-worklink');if(heroWorksLink)heroWorksLink.onclick=e=>{e.preventDefault();openGallery('Салон',e.currentTarget)};
 
-const sectionItems=[['tn13Portfolio','Портфолио'],['tn13Services','Услуги'],['tn38About','О нас'],['tn13Team','Команда'],['tn13Reviews','Отзывы'],['tn13Visit','Визит']];const sectionIds=sectionItems.map(x=>x[0]);const sectionNav=document.createElement('nav');sectionNav.className='tn23-section-nav';sectionNav.setAttribute('aria-hidden','true');sectionNav.innerHTML=sectionItems.map((x,i)=>`<button type="button" data-section="${x[0]}" class="${i===0?'active':''}">${x[1]}</button>`).join('');sectionNav.classList.add('salon-template-fixed-nav');document.body.appendChild(sectionNav);
-let activeSection='tn13Portfolio',navRaf=0,navTargetLock=null,navUnlockTimer=0;
+const sectionItems=[['tn13Services','Услуги'],['tn13Portfolio','Наши работы'],['tn38About','О нас'],['tn13Team','Команда'],['tn13Reviews','Отзывы'],['tn13Visit','Контакты']];const sectionIds=sectionItems.map(x=>x[0]);const sectionNav=document.createElement('nav');sectionNav.className='tn23-section-nav';sectionNav.setAttribute('aria-hidden','true');sectionNav.innerHTML=sectionItems.map((x,i)=>`<button type="button" data-section="${x[0]}" class="${i===0?'active':''}">${x[1]}</button>`).join('');sectionNav.classList.add('salon-template-fixed-nav');document.body.appendChild(sectionNav);
+let activeSection='tn13Services',navRaf=0,navTargetLock=null,navUnlockTimer=0;
 const mobileThemeMeta=document.querySelector('meta[name="theme-color"]');
 function updateThemeChrome(){const visit=document.getElementById('tn13Visit');const dark=!!visit&&visit.getBoundingClientRect().top<=window.innerHeight-24&&window.scrollY>hero.offsetHeight-48;const desired=dark?'#181818':'#fafaf9';if(mobileThemeMeta&&mobileThemeMeta.getAttribute('content')!==desired)mobileThemeMeta.setAttribute('content',desired)}
 function revealActiveNavButton(btn){const navRect=sectionNav.getBoundingClientRect(),btnRect=btn.getBoundingClientRect(),pad=10;let delta=0;if(btnRect.right>navRect.right-pad)delta=btnRect.right-(navRect.right-pad);else if(btnRect.left<navRect.left+pad)delta=btnRect.left-(navRect.left+pad);if(Math.abs(delta)>1)sectionNav.scrollBy({left:delta,behavior:'smooth'})}
@@ -181,6 +212,10 @@ function serviceDurationValue(raw){const m=String(raw||'').match(/\d+(?:[.,]\d+)
 function mobileServiceLang(){const raw=(document.body.dataset.brLang||document.documentElement.lang||(navigator.languages&&navigator.languages[0])||navigator.language||'en').toLowerCase();return raw.startsWith('ru')?'ru':raw.startsWith('hy')?'hy':'en'}
 function mobileDurationLabel(raw,lang=mobileServiceLang()){let v=serviceDurationValue(raw);if(!v)return '';v=lang==='ru'?v.replace('.',','):v.replace(',','.');return v+(lang==='hy'?' ժ.':lang==='en'?' h':' ч')}
 function updateServiceDurationLabels(lang=mobileServiceLang()){slist?.querySelectorAll('.tn31-service-time[data-duration]').forEach(el=>{el.textContent=mobileDurationLabel(el.dataset.duration,lang)})}
+function clientServiceLine(item){
+ const service=SITE.services.find(service=>service.id===item.id);
+ return SITE.mode==='production'&&service?window.TANEM_SERVICES.render(service,'mobile'):serviceLine(item);
+}
 function servicePriceMarkup(price){
  const range=String(price||'').trim().match(/^([\d ]+)[–-]([\d ]+)\s*([֏₽€$£])$/u);
  if(range){
@@ -227,6 +262,7 @@ function serviceWord(n){const n10=n%10,n100=n%100;if(n10===1&&n100!==11)return '
 const MOBILE_SERVICE_PREVIEW_LIMIT=8;
 let mobileMoreWrap=null,mobileSavedScrollAnchor=null,mobileMoreAnchorRun=0;
 function bindMobileServiceControls(scope){
+ window.TANEM_SERVICES.enhance(scope);
  scope.querySelectorAll('.tn31-service-price').forEach(price=>{if(price.textContent.trim()==='—')price.hidden=true});
  scope.querySelectorAll('[data-book-service]').forEach(btn=>btn.onclick=book);
  scope.querySelectorAll('[data-service-details]').forEach(btn=>btn.onclick=()=>{
@@ -243,6 +279,7 @@ function resetMobileMore(){
  mobileMoreAnchorRun++;
  if(mobileMoreWrap){mobileMoreWrap.remove();mobileMoreWrap=null}
  servicesExpanded=false;
+ unlockMobileServiceAnchor();
 }
 function renderServices(){
  resetMobileMore();
@@ -259,7 +296,7 @@ function renderServices(){
  const arr=SERVICES.filter(s=>s.cat===serviceCat);
  const shown=arr.slice(0,MOBILE_SERVICE_PREVIEW_LIMIT);
  const remaining=Math.max(0,arr.length-MOBILE_SERVICE_PREVIEW_LIMIT);
- slist.innerHTML=shown.map(serviceLine).join('');
+ slist.innerHTML=shown.map(clientServiceLine).join('');
  bindMobileServiceControls(slist);
  sMore.hidden=arr.length<=MOBILE_SERVICE_PREVIEW_LIMIT;
  sMore.setAttribute('aria-expanded','false');
@@ -296,7 +333,7 @@ function unlockMobileServiceAnchor(){
  mobileSavedScrollAnchor=null;
 }
 function makeMobileExtraServices(){
- return SERVICES.filter(s=>s.cat===serviceCat).slice(MOBILE_SERVICE_PREVIEW_LIMIT).map(serviceLine).join('');
+ return SERVICES.filter(s=>s.cat===serviceCat).slice(MOBILE_SERVICE_PREVIEW_LIMIT).map(clientServiceLine).join('');
 }
 function paintMobileMoreButton(){
  const arr=SERVICES.filter(s=>s.cat===serviceCat);
@@ -342,6 +379,13 @@ sMore.onclick=()=>{
    wrap.ontransitionend=e=>{if(e.target===wrap&&e.propertyName==='height'&&!servicesExpanded){wrap.remove();mobileMoreWrap=null;stabilizeMobileMoreButton(anchorTop);unlockMobileServiceAnchor()}};
   }
  }
+ // A rapidly reversed transition may finish at the same height without transitionend.
+ if(duration)window.setTimeout(()=>{
+  if(token!==mobileMoreAnchorRun)return;
+  if(servicesExpanded&&mobileMoreWrap)mobileMoreWrap.style.height='auto';
+  else if(mobileMoreWrap){mobileMoreWrap.remove();mobileMoreWrap=null;stabilizeMobileMoreButton(anchorTop)}
+  unlockMobileServiceAnchor();
+ },duration+80);
 };
 window.addEventListener('salon-template:languagechange',e=>{
  updateServiceDurationLabels(e.detail&&e.detail.lang);
@@ -690,7 +734,7 @@ services.insertAdjacentElement('afterend',about);
       document.body.style.width='';
       document.body.style.overflow='';
       document.body.style.touchAction='';
-      window.scrollTo({top:lockedScrollY,left:0,behavior:'auto'});
+      window.scrollTo({top:lockedScrollY,left:0,behavior:'instant'});
       requestAnimationFrame(()=>{document.documentElement.style.scrollBehavior=previousScrollBehavior});
     }
   }
@@ -1236,11 +1280,27 @@ services.insertAdjacentElement('afterend',about);
       clearInterval(timer);
       setLanguage(currentLang,false);
       [250,700,1400].forEach(function(ms){setTimeout(applyLanguage,ms);});
-      root.addEventListener('click',function(e){
-        if(e.target.closest('.br-lang-switch')) return;
-        setTimeout(applyLanguage,0);
-        setTimeout(applyLanguage,90);
-      },true);
+      // Translate newly inserted UI only. Ordinary clicks never change the language.
+      const pendingScopes=new Set();
+      let translationFrame=0;
+      const dynamicTranslation=new MutationObserver(records=>{
+        records.forEach(record=>record.addedNodes.forEach(node=>{
+          const scope=node.nodeType===Node.ELEMENT_NODE?node:node.parentElement;
+          if(!scope||scope.closest('.tanem-service-card,.tanem-master-head,.tanem-master-sections,.tanem-master-jump'))return;
+          pendingScopes.add(scope);
+        }));
+        if(translationFrame||!pendingScopes.size)return;
+        translationFrame=requestAnimationFrame(()=>{
+          translationFrame=0;
+          pendingScopes.forEach(scope=>{
+            if(!scope.isConnected)return;
+            translateTree(scope,currentLang);
+            translateAttributes(scope,currentLang);
+          });
+          pendingScopes.clear();
+        });
+      });
+      dynamicTranslation.observe(root,{childList:true,subtree:true});
       setInterval(function(){
         var statusRoot=root.querySelector('#tn22Status');
         var heroStatus=root.querySelector('.tn50-hero-status');
@@ -1254,4 +1314,4 @@ services.insertAdjacentElement('afterend',about);
 })();
 
 /* salon-template-cold-neutral-20260924 */
-(function(){if(document.getElementById('salon-template-cold-neutral-20260924'))return;const lateCss=document.createElement('link');lateCss.id='salon-template-cold-neutral-20260924';lateCss.rel='stylesheet';lateCss.href='mobile-overrides.css?v=salon-20261003-v4';document.head.appendChild(lateCss);const paletteCss=document.createElement('link');paletteCss.id='tanem-salon-palette-v2';paletteCss.rel='stylesheet';paletteCss.href='salon-palette.css?v=salon-20261003-v2';document.head.appendChild(paletteCss);})();
+(function(){if(document.getElementById('salon-template-cold-neutral-20260924'))return;const lateCss=document.createElement('link');lateCss.id='salon-template-cold-neutral-20260924';lateCss.rel='stylesheet';lateCss.href='mobile-overrides.css?v=salon-20261003-v4';document.head.appendChild(lateCss);const paletteCss=document.createElement('link');paletteCss.id='tanem-salon-palette-v2';paletteCss.rel='stylesheet';paletteCss.href='salon-palette.css?v=tanem-components-20261108-v1';document.head.appendChild(paletteCss);})();

@@ -21,10 +21,9 @@
   const mediaItem=item=>({src:item.src,alt:russian(item.alt)});
   const PORTFOLIO=SITE.media.portfolio.map(mediaItem);
   const DESKTOP_GALLERY_GROUPS=Object.fromEntries(
-    Object.entries(SITE.media.gallery).map(([category,items])=>{
-      const limit=SITE.media.desktopGalleryLimits?.[category]??items.length;
-      return [category,items.slice(0,limit).map(mediaItem)];
-    })
+    Object.entries(SITE.media.gallery).map(([category,items])=>[
+      category,items.map(mediaItem)
+    ])
   );
   const SERVICE_CATEGORIES=SITE.categoryOrder.filter(category=>SITE.services.some(service=>service.category===category));
   const SERVICE_DATA=Object.fromEntries(SERVICE_CATEGORIES.map(category=>[
@@ -36,7 +35,7 @@
         russian(variant.price)
       ]);
       const tuple=[russian(service.title),russian(service.price),russian(service.duration),variants,russian(service.description)];
-      if(service.id==='mens-cut-long'||service.id==='mens-cut-color')tuple.push(service.id);
+      tuple.push(service.id);
       return tuple;
     })
   ]));
@@ -73,6 +72,7 @@
         <a href="#salonDesktopServices">Услуги</a>
         <a href="#salonDesktopPortfolio">Наши работы</a>
         <a href="#salonDesktopAbout">О нас</a>
+        <a href="#salonDesktopTeam">Команда</a>
         <a href="#salonDesktopReviews">Отзывы</a>
         <a href="#salonDesktopContacts">Контакты</a>
       </nav>
@@ -430,7 +430,7 @@
   const bookBtn=document.getElementById('stdBookBtn');
   const bookOverlay=document.getElementById('stdBookOverlay');
   const openDesktopBooking=()=>{bookOverlay.classList.add('open');document.body.style.overflow='hidden'};
-  const closeDesktopBooking=()=>{bookOverlay.classList.remove('open');if(!document.querySelector('.std-gallery.open,.std-gallery-browser.open'))document.body.style.overflow=''};
+  const closeDesktopBooking=()=>{bookOverlay.classList.remove('open');if(!document.querySelector('.std-gallery.open,.std-gallery-browser.open,.std-master-overlay.open'))document.body.style.overflow=''};
   bookBtn.addEventListener('click',openDesktopBooking);
   const headerBookBtn=document.getElementById('stdHeaderBookBtn');
   if(headerBookBtn)headerBookBtn.addEventListener('click',openDesktopBooking);
@@ -499,16 +499,25 @@
   function openDesktopViewer(items,index=0,source='gallery'){
     galleryItems=Array.isArray(items)&&items.length?items:PORTFOLIO.slice();
     gallery.dataset.source=source;
-    galleryViewAll.hidden=source!=='portfolio';
+    galleryViewAll.hidden=source!=='portfolio'&&source!=='master';
     galleryIndex=Math.max(0,Math.min(index,galleryItems.length-1));
     paintGallery();
     gallery.classList.add('open');
     document.body.style.overflow='hidden';
   }
+  let masterGalleryContext=null;
+  let galleryScopeItems=null;
+  document.addEventListener('tanem:open-master-gallery',event=>{
+    const {items,index,category,showGallery}=event.detail||{};
+    if(!Array.isArray(items)||!items.length)return;
+    masterGalleryContext={items,category};
+    if(showGallery)openDesktopGalleryBrowser(category);
+    else openDesktopViewer(items,index||0,'master');
+  });
   function closeDesktopViewer(){
     gallery.classList.remove('open');
     resetDesktopViewer();
-    if(!galleryBrowser.classList.contains('open'))document.body.style.overflow='';
+    if(!galleryBrowser.classList.contains('open')&&!document.querySelector('.std-master-overlay.open'))document.body.style.overflow='';
   }
   function moveDesktopGallery(step){
     if(galleryItems.length<2)return;
@@ -518,7 +527,8 @@
 
   function renderDesktopGalleryBrowser(){
     const cats=Object.keys(DESKTOP_GALLERY_GROUPS);
-    const items=DESKTOP_GALLERY_GROUPS[galleryCategory]||[];
+    const items=galleryScopeItems||DESKTOP_GALLERY_GROUPS[galleryCategory]||[];
+    galleryBrowserTabs.hidden=!!galleryScopeItems;
     if(!galleryBrowserTabs.childElementCount){
       galleryBrowserTabs.innerHTML=cats.map(cat=>'<button class="std-gallery-browser-tab" type="button" data-gallery-category="'+cat+'">'+cat+'</button>').join('');
       galleryBrowserTabs.querySelectorAll('[data-gallery-category]').forEach(btn=>btn.onclick=()=>{
@@ -537,16 +547,17 @@
   galleryBrowserGrid.addEventListener("click",e=>{
     const tile=e.target.closest("[data-gallery-item]");
     if(!tile)return;
-    const items=DESKTOP_GALLERY_GROUPS[galleryCategory]||[];
+    const items=galleryScopeItems||DESKTOP_GALLERY_GROUPS[galleryCategory]||[];
     openDesktopViewer(items,Number(tile.dataset.galleryItem)||0,"gallery");
   });
   galleryBrowserGrid.addEventListener("pointerover",e=>{
     const tile=e.target.closest("[data-gallery-item]");
     if(!tile)return;
-    const item=(DESKTOP_GALLERY_GROUPS[galleryCategory]||[])[Number(tile.dataset.galleryItem)||0];
+    const item=(galleryScopeItems||DESKTOP_GALLERY_GROUPS[galleryCategory]||[])[Number(tile.dataset.galleryItem)||0];
     if(item)warmGalleryImage(item.src);
   },{passive:true});
-  function openDesktopGalleryBrowser(cat='Салон'){
+  function openDesktopGalleryBrowser(cat='Салон',scopedItems=null){
+    galleryScopeItems=scopedItems;
     galleryCategory=Object.prototype.hasOwnProperty.call(DESKTOP_GALLERY_GROUPS,cat)?cat:'Салон';
     renderDesktopGalleryBrowser();
     galleryBrowser.classList.add('open');
@@ -555,7 +566,7 @@
   }
   function closeDesktopGalleryBrowser(){
     galleryBrowser.classList.remove('open');
-    if(!gallery.classList.contains('open'))document.body.style.overflow='';
+    if(!gallery.classList.contains('open')&&!document.querySelector('.std-master-overlay.open'))document.body.style.overflow='';
   }
 
   document.querySelectorAll('.std-work').forEach(btn=>{
@@ -568,7 +579,10 @@
   document.getElementById('stdGalleryClose').addEventListener('click',closeDesktopViewer);
   document.getElementById('stdGalleryPrev').addEventListener('click',()=>moveDesktopGallery(-1));
   document.getElementById('stdGalleryNext').addEventListener('click',()=>moveDesktopGallery(1));
-  galleryViewAll.addEventListener('click',()=>{closeDesktopViewer();openDesktopGalleryBrowser('Ногти')});
+  galleryViewAll.addEventListener('click',()=>{
+    const context=gallery.dataset.source==='master'?masterGalleryContext:null;
+    closeDesktopViewer();openDesktopGalleryBrowser(context?.category||'Ногти');
+  });
   gallery.addEventListener('click',e=>{if(e.target===gallery)closeDesktopViewer()});
 
   galleryStage.addEventListener('wheel',e=>{
@@ -658,7 +672,7 @@
   });
 
   const SERVICE_PREVIEW_LIMIT=8;
-  let activeServiceCategory='Все';
+  let activeServiceCategory=SERVICE_CATEGORIES[0]||'';
   let desktopServicesExpanded=false;
   let desktopServiceLanguageReady=false;
   const serviceTabs=document.getElementById('stdServiceTabs');
@@ -666,7 +680,7 @@
   const serviceMore=document.getElementById('stdServiceMore');
   const serviceMoreText=document.getElementById('stdServiceMoreText');
   const serviceMoreTextMobile=document.getElementById('stdServiceMoreTextMobile');
-  const DESKTOP_SERVICE_TABS=['Все',...SERVICE_CATEGORIES];
+  const DESKTOP_SERVICE_TABS=[...SERVICE_CATEGORIES];
 
   function desktopServiceWord(n){
     const n10=n%10,n100=n%100;
@@ -688,6 +702,11 @@
     return '<span class="dct-money-prefix">'+(m[1]||'')+'</span>'+
       '<span class="dct-money-amount">'+m[2].trim()+'</span>'+
       '<span class="dct-money-symbol">'+m[3]+'</span>';
+  }
+
+  function clientServiceCard(item){
+    const service=SITE.services.find(service=>service.id===item[5]);
+    return SITE.mode==='production'&&service?window.TANEM_SERVICES.render(service,'desktop'):templateServiceCard(item);
   }
 
   function templateServiceCard(item){
@@ -743,9 +762,7 @@
   }
 
   function currentTemplateServiceState(){
-    const groups=activeServiceCategory==='Все'
-      ? SERVICE_CATEGORIES.map(cat=>({id:cat,label:cat,services:SERVICE_DATA[cat]||[]}))
-      : SERVICE_CATEGORIES.filter(cat=>cat===activeServiceCategory).map(cat=>({id:cat,label:cat,services:SERVICE_DATA[cat]||[]}));
+    const groups=SERVICE_CATEGORIES.filter(cat=>cat===activeServiceCategory).map(cat=>({id:cat,label:cat,services:SERVICE_DATA[cat]||[]}));
 
     const total=groups.reduce((sum,group)=>sum+group.services.length,0);
     if(desktopServicesExpanded||total<=SERVICE_PREVIEW_LIMIT){
@@ -771,7 +788,7 @@
   }
 
   function renderDesktopServices(){
-    // “All” plus up to four real categories share the full available width.
+    // Up to five real categories share the full available width.
     // Keep the original blurred scrolling rail for five or more real categories.
     const ribbon=serviceTabs.closest('.mct-tabs-ribbon-wrap');
     const compact=DESKTOP_SERVICE_TABS.length<=5;
@@ -780,7 +797,7 @@
     serviceTabs.closest('.mct-tabs')?.classList.toggle('is-many',!compact);
     serviceTabs.style.setProperty('--salon-service-tab-count',String(DESKTOP_SERVICE_TABS.length));
     serviceTabs.innerHTML=DESKTOP_SERVICE_TABS.map(cat=>
-      '<button class="mct-tab'+(cat==='Все'?' mct-tab-all':'')+(cat===activeServiceCategory?' is-active':'')+'" type="button" role="tab" aria-selected="'+(cat===activeServiceCategory?'true':'false')+'" data-service-category="'+cat+'">'+cat+'</button>'
+      '<button class="mct-tab'+(cat===activeServiceCategory?' is-active':'')+'" type="button" role="tab" aria-selected="'+(cat===activeServiceCategory?'true':'false')+'" data-service-category="'+cat+'">'+cat+'</button>'
     ).join('');
 
     serviceTabs.querySelectorAll('[data-service-category]').forEach(btn=>btn.onclick=()=>{
@@ -796,12 +813,7 @@
     });
 
     const state=currentTemplateServiceState();
-    serviceList.innerHTML=state.groups.map(group=>{
-      const heading=activeServiceCategory==='Все'
-        ? '<div class="dct-service-category-heading"><span>'+group.label+'</span><i aria-hidden="true"></i></div>'
-        : '';
-      return '<section class="dct-service-category">'+heading+'<div class="dct-service-category-list">'+group.services.map(templateServiceCard).join('')+'</div></section>';
-    }).join('');
+    serviceList.innerHTML=state.groups.map(group=>'<section class="dct-service-category"><div class="dct-service-category-list">'+group.services.map(clientServiceCard).join('')+'</div></section>').join('');
 
     bindDesktopServiceControls(serviceList);
 
@@ -826,6 +838,7 @@
   }
 
   function bindDesktopServiceControls(scope){
+    window.TANEM_SERVICES.enhance(scope);
     scope.querySelectorAll('[data-service-book]').forEach(btn=>btn.onclick=openDesktopBooking);
     scope.querySelectorAll('[data-service-details]').forEach(btn=>btn.onclick=()=>{
       const card=btn.closest('.is-demo-expandable');
@@ -901,9 +914,7 @@
     desktopSavedScrollAnchor=null;
   }
   function makeDesktopExtraServices(){
-    const groups=activeServiceCategory==='Все'
-      ? SERVICE_CATEGORIES.map(cat=>({id:cat,label:cat,services:SERVICE_DATA[cat]||[]}))
-      : SERVICE_CATEGORIES.filter(cat=>cat===activeServiceCategory).map(cat=>({id:cat,label:cat,services:SERVICE_DATA[cat]||[]}));
+    const groups=SERVICE_CATEGORIES.filter(cat=>cat===activeServiceCategory).map(cat=>({id:cat,label:cat,services:SERVICE_DATA[cat]||[]}));
     let shown=SERVICE_PREVIEW_LIMIT;
     const sections=[];
     groups.forEach(group=>{
@@ -911,16 +922,8 @@
       shown-=already;
       const extra=group.services.slice(already);
       if(!extra.length)return;
-      const cards=extra.map(templateServiceCard).join('');
-      if(already){
-        sections.push('<div class="dct-service-category-list dct-service-extra-cards">'+cards+'</div>');
-      }else{
-        const heading=activeServiceCategory==='Все'
-          ? '<div class="dct-service-category-heading"><span>'+group.label+'</span><i aria-hidden="true"></i></div>'
-          : '';
-        sections.push('<section class="dct-service-category">'+heading+
-          '<div class="dct-service-category-list">'+cards+'</div></section>');
-      }
+      const cards=extra.map(clientServiceCard).join('');
+      sections.push('<div class="dct-service-category-list dct-service-extra-cards">'+cards+'</div>');
     });
     return sections.join('');
   }
@@ -1005,6 +1008,12 @@
         };
       }
     }
+    if(duration)window.setTimeout(()=>{
+      if(anchorToken!==desktopMoreAnchorRun)return;
+      if(desktopServicesExpanded&&desktopMoreWrap)desktopMoreWrap.style.height='auto';
+      else if(desktopMoreWrap){desktopMoreWrap.remove();desktopMoreWrap=null;stabilizeDesktopMoreButton(anchorTop)}
+      unlockServiceScrollAnchor();
+    },duration+80);
   };
   renderDesktopServices();
 
@@ -1238,7 +1247,7 @@
     ["15 000 ₽","15 000 ₽","15 000 ₽"],
     ["от 6 000 ₽","from 6 000 ₽","from 6 000 ₽"],
     ['Услуги','Ծառայություններ','Services'],['Наши работы','Մեր աշխատանքները','Our work'],['О нас','Մեր մասին','About us'],
-    ['Отзывы','Կարծիքներ','Reviews'],['Контакты','Կոնտակտներ','Contacts'],['Салон красоты','Գեղեցկության սրահ','Beauty salon'],
+    ['Команда','Թիմ','Team'],['Отзывы','Կարծիքներ','Reviews'],['Контакты','Կոնտակտներ','Contacts'],['Салон красоты','Գեղեցկության սրահ','Beauty salon'],
     ['Ваша красота. Ваша уверенность.','Ձեր գեղեցկությունը։ Ձեր վստահությունը։','Your beauty. Your confidence.'],
     ['Салон красоты в самом сердце Города.','Գեղեցկության սրահ Քաղաքի սրտում։','A beauty salon in the heart of City.'],['Листайте вниз','Սահեցրեք ներքև','Scroll down'],['Город,','Քաղաք,','City,'],['Адрес салона','Սրահի հասցե','Адрес салона'],
     ['Записаться','Ամրագրել','Book now'],['Записаться →','Ամրագրել →','Book now →'],['Записаться онлайн','Ամրագրել առցանց','Book online'],['Смотреть работы','Դիտել աշխատանքները','View our work'],
