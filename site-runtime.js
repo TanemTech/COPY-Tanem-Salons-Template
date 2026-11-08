@@ -195,7 +195,7 @@
     const root=document.getElementById('salon-desktop-v1');
     if(!root)return;
     const salon=data.salon,contacts=data.contacts;
-    setText('.std-header-brand-main,.std-logo,.dct-about-brand',text(salon.name,lang),root);
+    setText('.std-header-brand-main,.std-logo:not(.std-logo-image),.dct-about-brand',text(salon.name,lang),root);
     const desktopBrand=root.querySelector('.std-header-brand-main');
     if(desktopBrand){
       const cleanName=text(salon.name,lang).trim();
@@ -345,8 +345,377 @@
     if(description)description.setAttribute('content',text(data.salon.heroDescription,lang)||text(data.salon.about,lang));
   }
 
+  function setupDesktopTeamPaging(){
+    const track=document.getElementById('stdTeamTrack');
+    if(!track)return;
+    const cards=[...track.children].filter(card=>card.classList.contains('std-master'));
+    if(cards.length<=4)return;
+    track.classList.add('tanem-paged-team');
+    let page=0;
+    const total=Math.ceil(cards.length/4);
+    const controls=document.createElement('div');
+    controls.className='tanem-team-controls';
+    controls.innerHTML='<button type="button" data-turn="-1" aria-label="Предыдущие мастера">←</button><span aria-live="polite"></span><button type="button" data-turn="1" aria-label="Следующие мастера">→</button>';
+    track.after(controls);
+    const update=()=>{
+      cards.forEach((card,i)=>{
+        card.hidden=Math.floor(i/4)!==page;
+        card.classList.toggle('tanem-team-solo',page===total-1&&cards.length%4===1&&i===cards.length-1);
+      });
+      controls.querySelector('span').textContent=(page+1)+' / '+total;
+    };
+    controls.querySelectorAll('[data-turn]').forEach(button=>button.addEventListener('click',()=>{
+      page=(page+Number(button.dataset.turn)+total)%total;
+      update();
+    }));
+    // Horizontal touch, mouse and trackpad gestures turn the same four-card pages.
+    let pointer=null,suppressClick=false,wheelDelta=0;
+    track.style.touchAction='pan-y';
+    track.addEventListener('pointerdown',event=>{
+      if(event.button!==0)return;
+      pointer={id:event.pointerId,x:event.clientX,y:event.clientY,moved:false};
+    });
+    track.addEventListener('pointermove',event=>{
+      if(!pointer||event.pointerId!==pointer.id)return;
+      if(Math.abs(event.clientX-pointer.x)>12&&Math.abs(event.clientX-pointer.x)>Math.abs(event.clientY-pointer.y))pointer.moved=true;
+    });
+    track.addEventListener('pointerup',event=>{
+      if(!pointer||event.pointerId!==pointer.id)return;
+      const dx=event.clientX-pointer.x,dy=event.clientY-pointer.y;
+      if(pointer.moved&&Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.2){
+        page=(page+(dx<0?1:-1)+total)%total;
+        update();
+        suppressClick=true;
+      }
+      pointer=null;
+    });
+    track.addEventListener('pointercancel',()=>{pointer=null});
+    track.addEventListener('click',event=>{
+      if(!suppressClick)return;
+      suppressClick=false;event.preventDefault();event.stopImmediatePropagation();
+    },true);
+    track.addEventListener('wheel',event=>{
+      if(Math.abs(event.deltaX)<=Math.abs(event.deltaY)*1.4||Math.abs(event.deltaX)<3)return;
+      event.preventDefault();
+      wheelDelta+=event.deltaX;
+      if(Math.abs(wheelDelta)>65){page=(page+(wheelDelta>0?1:-1)+total)%total;update();wheelDelta=0}
+    },{passive:false});
+    update();
+  }
+
+  function setupMasterProfiles(){
+    const desktop=window.__BR_DESKTOP_DEVICE__===true;
+    const overlay=document.querySelector(desktop?'#stdMasterOverlay':'.tn22-master-page');
+    if(!overlay)return;
+    let selectedId='';
+    let renderedMasterId='',renderedLang='';
+    let stopServiceToggle=()=>{},stopReviewMotion=()=>{};
+    let historyEntryOpen=false;
+    let restoringHistoryProfile=false;
+    const historyKey='tanemMasterProfile';
+    const profileCloseSelector=desktop?'#stdMasterPageClose':'.tn22-back';
+    const nestedCloseSelectors=desktop?[
+      '#stdBookOverlay.open #stdBookClose',
+      '#stdGallery.open #stdGalleryClose',
+      '#stdGalleryBrowser.open #stdGalleryBrowserBack'
+    ]:[
+      '#tn13BookSheet.open #tn13BookClose',
+      '.tn22-viewer.open .tn22-view-close',
+      '#tn13Gallery.open .tn22-gallery-back'
+    ];
+    const copy={
+      ru:{about:'О мастере',services:'Услуги',portfolio:'Портфолио',reviews:'Отзывы',book:'Записаться',more:'Показать весь прайс',less:'Свернуть прайс',emptyServices:'Услуги уточняются в салоне.',emptyPortfolio:'Фотографии по этому направлению пока не добавлены.',portfolioNote:'Примеры работ студии по направлению мастера',emptyReviews:'Отзывы пока не добавлены.',source:'Источник: Sonline',view:'Открыть профиль в Sonline',none:'Длительность уточняется'},
+      en:{about:'About',services:'Services',portfolio:'Portfolio',reviews:'Reviews',book:'Book',more:'Show full price list',less:'Collapse price list',emptyServices:'Check services with the salon.',emptyPortfolio:'Studio gallery photos for this specialty are not available yet.',portfolioNote:'Studio work examples in this specialty',emptyReviews:'Reviews have not been added yet.',source:'Source: Sonline',view:'Open Sonline profile',none:'Duration on request'}
+    };
+    function biography(master,lang){return text(master.about,lang)}
+    function serviceMarkup(service,lang,masterId){
+      return window.TANEM_SERVICES.render({...service,profileId:masterId},desktop?'desktop':'mobile',lang);
+    }
+    function masterGallery(master){
+      const groups=(master.categories||[]).map(category=>category==='Маникюр'||category==='Педикюр'?'Ногти':category);
+      const gallery=groups.flatMap(category=>(data.media?.gallery?.[category]||[]).map(item=>({...item,category})));
+      if(master.work?.length){
+        const all=Object.values(data.media?.gallery||{}).flat();
+        return master.work.map(item=>typeof item==='string'?(all.find(photo=>photo.src===item)||{src:item,alt:master.name}):item);
+      }
+      return gallery;
+    }
+    function profileReviews(master,lang){
+      if(data.masterReviews?.enabled!==true)return [];
+      const byId=new Map((data.reviews||[]).map(review=>[review.id,review]));
+      return (master.reviewIds||[]).map(id=>byId.get(id)).filter(review=>review&&text(review.text,lang)).slice(0,9);
+    }
+    function reviewMarkup(review,lang,duplicate=false){
+      const name=text(review.author,lang);
+      const rating=Number(review.rating);
+      const stars=Number.isInteger(rating)&&rating>=1&&rating<=5?'★'.repeat(rating):'';
+      const url=review.url||data.contacts.reviewsUrl||'';
+      const source=text(review.source,lang)+(review.preview?' · '+(lang==='en'?'TEST':'ТЕСТ'):'');
+      const tag=url?'a':'article';
+      const linkAttrs=url?' href="'+esc(url)+'" target="_blank" rel="noopener noreferrer"':'';
+      return '<'+tag+' class="tanem-master-review '+(desktop?'std-review-card':'tn30-review-card')+'"'+linkAttrs+(duplicate?' data-review-duplicate aria-hidden="true" tabindex="-1"':'')+'>'+
+        '<div class="'+(desktop?'std-review-head':'tn30-review-head')+'"><span class="'+(desktop?'std-review-avatar':'tn30-review-avatar')+'">'+esc([...String(name)][0]||'S')+'</span><span><strong class="'+(desktop?'std-review-name':'tn30-review-name')+'">'+esc(name)+'</strong><span class="'+(desktop?'std-review-meta':'tn30-review-meta')+'">'+esc(source)+(desktop?'':' '+stars)+'</span>'+(desktop&&stars?'<span class="std-review-stars">'+stars+'</span>':'')+'</span></div>'+
+        '<p class="'+(desktop?'std-review-text':'')+'">'+esc(text(review.text,lang))+'</p>'+
+        '<span class="'+(desktop?'std-review-more':'tn30-review-open')+'">'+esc(lang==='en'?'Read more':'Подробнее')+' →</span></'+tag+'>';
+    }
+    function render(master){
+      const lang=currentLang()==='en'?'en':'ru',words=copy[lang];
+      const target=overlay.querySelector(desktop?'#stdMasterPageContent':'.tn22-master-body');
+      if(!target)return;
+      stopServiceToggle();stopReviewMotion();
+      const sameMaster=renderedMasterId===master.id;
+      const servicesExpanded=sameMaster&&target.querySelector('[data-master-expand]')?.getAttribute('aria-expanded')==='true';
+      const openOptions=new Set(sameMaster?[...target.querySelectorAll('.tanem-service-options')].filter(node=>node.dataset.expanded===undefined?node.open:node.dataset.expanded==='true').map(node=>node.closest('[data-tanem-service-id]').dataset.tanemServiceId):[]);
+      renderedMasterId=master.id;renderedLang=lang;
+      const items=(data.services||[]).filter(item=>master.serviceIds?.length?master.serviceIds.includes(item.id):(master.categories||[]).includes(item.category));
+      const works=masterGallery(master);
+      const visibleWorks=desktop&&works.length>=3?works.slice(0,Math.min(9,Math.floor(works.length/3)*3)):works;
+      const personalReviews=profileReviews(master,lang);
+      const reviewCards=personalReviews.map(review=>reviewMarkup(review,lang)).join('');
+      const reviewDuplicates=personalReviews.length>1?personalReviews.map(review=>reviewMarkup(review,lang,true)).join(''):'';
+      const reviewSection='<section class="tanem-master-section" id="tanem-master-reviews"><h3>'+esc(words.reviews)+'</h3>'+
+        (personalReviews.length?'<div class="tanem-master-review-window"><div class="tanem-master-review-track">'+reviewCards+reviewDuplicates+'</div></div>':'<p class="tanem-master-empty">'+esc(words.emptyReviews)+'</p>')+
+        '</section>';
+      // Personal reviews are withheld until approved. Keep the section visible.
+      const tabs=['about','services','portfolio','reviews'];
+      const name=text(master.name,lang),role=text(master.role,lang),avatar=typeof master.photo==='string'?master.photo:master.photo?.src;
+      const genitives={'Юлия':'Юлии','Эльвира':'Эльвиры','Дарья':'Дарьи','Анна':'Анны','Марина':'Марины','Олеся':'Олеси'};
+      const moreLabel=lang==='en'?'Show all services by '+name:'Показать все услуги '+(genitives[name]||name);
+      const lessLabel=lang==='en'?'Collapse services':'Свернуть услуги';
+      const sections=[
+        '<section class="tanem-master-section" id="tanem-master-about"><h3>'+esc(words.about)+'</h3><p class="tanem-master-bio">'+esc(biography(master,lang))+'</p></section>',
+        '<section class="tanem-master-section" id="tanem-master-services"><h3>'+esc(words.services)+'</h3>'+
+          (items.length?'<div class="tanem-master-price-list">'+items.slice(0,6).map(item=>serviceMarkup(item,lang,master.id)).join('')+
+            (items.length>6?'<div class="tanem-master-extra"'+(servicesExpanded?'':' hidden')+'>'+(servicesExpanded?items.slice(6).map(item=>serviceMarkup(item,lang,master.id)).join(''):'')+'</div>':'')+'</div>':
+            '<p class="tanem-master-empty">'+esc(words.emptyServices)+'</p>')+
+          (items.length>6?'<button class="tanem-master-more" type="button" aria-expanded="'+String(!!servicesExpanded)+'" data-master-expand>'+esc(servicesExpanded?lessLabel:moreLabel)+' <span>'+(servicesExpanded?'↑':'↓')+'</span></button>':'')+'</section>',
+        '<section class="tanem-master-section" id="tanem-master-portfolio"><h3>'+esc(words.portfolio)+'</h3>'+
+          (works.length?'<p class="tanem-master-gallery-note">'+esc(words.portfolioNote)+'</p><div class="tanem-master-gallery'+(visibleWorks.length<=2?' is-paired':'')+'">'+visibleWorks.map((item,i)=>'<button type="button" data-master-work="'+i+'" aria-label="'+esc(lang==='en'?'View photo':'Посмотреть фотографию')+'"><img src="'+esc(item.src)+'" alt="'+esc(text(item.alt,lang))+'" loading="lazy"></button>').join('')+'</div><button class="tanem-master-more" type="button" data-master-gallery>'+esc(lang==='en'?'Open gallery':'Открыть галерею')+' <span aria-hidden="true">→</span></button>':
+            '<p class="tanem-master-empty">'+esc(words.emptyPortfolio)+'</p>')+'</section>',
+        reviewSection
+      ];
+      target.innerHTML='<div class="tanem-master-head"><div class="tanem-master-photo">'+(avatar?'<img src="'+esc(avatar)+'" alt="'+esc(name)+'">':'')+'</div><h2>'+esc(name)+'</h2><p>'+esc(role)+'</p></div><div class="tanem-master-sections">'+sections.join('')+'</div>';
+      const existing=overlay.querySelector('.tanem-master-jump');
+      if(existing)existing.remove();
+      const nav=document.createElement('nav');nav.className='tanem-master-jump '+(desktop?'std-master-tabs':'tn22-master-tabs');nav.setAttribute('aria-label',lang==='en'?'Specialist sections':'Разделы профиля');
+      nav.innerHTML=tabs.map((key,i)=>'<button type="button" data-jump="'+key+'" class="'+(i===0?'active':'')+'">'+esc(words[key])+'</button>').join('');
+      target.querySelector('.tanem-master-head').after(nav);
+      const updateNav=()=>{
+        const sections=[...target.querySelectorAll('.tanem-master-section')];
+        const stickyBottom=nav.getBoundingClientRect().bottom;
+        const atBottom=overlay.scrollTop>0&&overlay.scrollTop+overlay.clientHeight>=overlay.scrollHeight-3;
+        const active=atBottom?sections[sections.length-1]:[...sections].reverse().find(section=>section.getBoundingClientRect().top<=stickyBottom+52)||sections[0];
+        nav.querySelectorAll('[data-jump]').forEach((button,i)=>button.classList.toggle('active',active===sections[i]));
+      };
+      overlay.__tanemMasterUpdate=updateNav;
+      nav.querySelectorAll('[data-jump]').forEach(button=>button.addEventListener('click',()=>{
+        const section=target.querySelector('#tanem-master-'+button.dataset.jump);
+        if(!section)return;
+        const position=overlay.scrollTop+section.getBoundingClientRect().top-overlay.getBoundingClientRect().top-nav.offsetHeight-32;
+        overlay.scrollTo({top:position,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+      }));
+      const moreButton=target.querySelector('[data-master-expand]');
+      if(moreButton)stopServiceToggle=bindServiceToggle(moreButton,target.querySelector('.tanem-master-extra'),()=>{
+        const extra=target.querySelector('.tanem-master-extra');
+        extra.innerHTML=items.slice(6).map(item=>serviceMarkup(item,lang,master.id)).join('');
+        window.TANEM_SERVICES.enhance(extra);
+      },moreLabel,lessLabel,updateNav);
+      const openWorks=(index,showGallery,origin)=>{
+        document.dispatchEvent(new CustomEvent('tanem:open-master-gallery',{detail:{
+          items:works.map(item=>({src:item.src,alt:text(item.alt,lang)})),index,
+          category:works[index]?.category||works[0]?.category||'Салон',showGallery,origin
+        }}));
+      };
+      target.querySelectorAll('[data-master-work]').forEach(button=>button.addEventListener('click',()=>openWorks(Number(button.dataset.masterWork)||0,false,button)));
+      target.querySelector('[data-master-gallery]')?.addEventListener('click',event=>openWorks(0,true,event.currentTarget));
+      const book=overlay.querySelector(desktop?'#stdMasterPageBook':'.tn22-master-book');
+      if(book){
+        const names={'Юлия':'Юлии','Эльвира':'Эльвире','Дарья':'Дарье','Анна':'Анне','Марина':'Марине','Олеся':'Олесе'};
+        book.textContent=lang==='en'?'Book with '+name:'Записаться к '+(names[name]||name);
+      }
+      window.TANEM_SERVICES.enhance(target);
+      const reviewTrack=target.querySelector('.tanem-master-review-track');
+      if(reviewTrack)stopReviewMotion=startMasterReviews(reviewTrack,overlay);
+      target.querySelectorAll('[data-tanem-service-id]').forEach(card=>{
+        const options=card.querySelector('.tanem-service-options');
+        if(options){
+          const isOpen=openOptions.has(card.dataset.tanemServiceId);
+          options.open=isOpen;
+          options.dataset.expanded=String(isOpen);
+          const summary=options.querySelector('summary');
+          summary?.setAttribute('aria-expanded',String(isOpen));
+          const label=options.querySelector('.tanem-options-label');
+          if(label)label.textContent=label.textContent.slice(0,-2)+(isOpen?' −':' +');
+        }
+      });
+      updateNav();
+    }
+    // Use the catalogue's height animation and follow the collapse button in
+    // the profile's own scroll container, with cleanup for rapid reversals.
+    function bindServiceToggle(button,extra,populate,moreLabel,lessLabel,updateNav){
+      let frame=0,timer=0,run=0,savedAnchor=null;
+      const unlock=()=>{if(savedAnchor!==null){overlay.style.overflowAnchor=savedAnchor;savedAnchor=null}};
+      const stabilize=anchorTop=>{
+        const delta=button.getBoundingClientRect().top-anchorTop;
+        if(Number.isFinite(delta)&&Math.abs(delta)>.5)overlay.scrollTo({top:Math.max(0,overlay.scrollTop+delta),behavior:'instant'});
+      };
+      button.onclick=()=>{
+        const expanded=button.getAttribute('aria-expanded')!=='true';
+        const anchorTop=button.getBoundingClientRect().top;
+        const startHeight=extra.hidden?0:extra.getBoundingClientRect().height;
+        const token=++run;
+        clearTimeout(timer);cancelAnimationFrame(frame);extra.ontransitionend=null;
+        if(savedAnchor===null){savedAnchor=overlay.style.overflowAnchor;overlay.style.overflowAnchor='none'}
+        if(expanded&&!extra.childElementCount)populate();
+        button.setAttribute('aria-expanded',String(expanded));
+        button.innerHTML=esc(expanded?lessLabel:moreLabel)+' <span>'+(expanded?'↑':'↓')+'</span>';
+        extra.hidden=false;
+        extra.style.transition='none';extra.style.height=startHeight+'px';
+        const endHeight=expanded?extra.scrollHeight:0;
+        const duration=window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:400;
+        const finish=()=>{
+          if(token!==run)return;
+          cancelAnimationFrame(frame);clearTimeout(timer);extra.ontransitionend=null;
+          extra.style.transition='none';extra.hidden=!expanded;extra.style.height=expanded?'auto':'';
+          if(!expanded)stabilize(anchorTop);
+          unlock();updateNav();
+        };
+        if(!duration||Math.abs(startHeight-endHeight)<1){finish();return}
+        extra.offsetHeight;
+        extra.style.transition='height '+duration+'ms cubic-bezier(.22,1,.36,1)';
+        const follow=()=>{
+          if(token!==run)return;
+          stabilize(anchorTop);updateNav();frame=requestAnimationFrame(follow);
+        };
+        frame=requestAnimationFrame(()=>{
+          if(token!==run)return;
+          extra.style.height=endHeight+'px';
+          if(!expanded)follow();
+        });
+        extra.ontransitionend=event=>{if(event.target===extra&&event.propertyName==='height')finish()};
+        timer=setTimeout(finish,duration+100);
+        updateNav();
+      };
+      return ()=>{++run;clearTimeout(timer);cancelAnimationFrame(frame);extra.ontransitionend=null;unlock()};
+    }
+    function startMasterReviews(track,container){
+      const viewport=track.parentElement;
+      // Touch reviews use a normal swipe rail, so a readable card stays still.
+      if(!desktop){viewport.classList.add('is-static');return ()=>{}}
+      const originals=[...track.querySelectorAll('.tanem-master-review:not([data-review-duplicate])')];
+      const gap=parseFloat(getComputedStyle(track).gap)||16;
+      const contentWidth=originals.reduce((sum,card)=>sum+card.getBoundingClientRect().width,0)+Math.max(0,originals.length-1)*gap;
+      const staticReviews=contentWidth<=viewport.clientWidth||window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      viewport.classList.toggle('is-static',staticReviews);
+      if(staticReviews)return ()=>{};
+      const width=contentWidth+gap;
+      let offset=0,last=0,dragX=0,dragging=false,moved=false,frame=0,stopped=false;
+      const move=timestamp=>{
+        if(stopped||!track.isConnected||!container.classList.contains('open'))return;
+        const paused=track.matches(':hover,:focus-within');
+        if(!paused&&!dragging&&last&&width)offset-=Math.min((timestamp-last)*.024,1.8);
+        if(width){offset=((offset%width)-width)%width;track.style.transform='translate3d('+offset+'px,0,0)'}
+        last=timestamp;frame=requestAnimationFrame(move);
+      };
+      track.addEventListener('dragstart',event=>event.preventDefault());
+      track.addEventListener('pointerdown',event=>{
+        if(event.button!==0)return;
+        dragging=true;moved=false;dragX=event.clientX;
+      });
+      track.addEventListener('pointermove',event=>{
+        if(!dragging)return;
+        const delta=event.clientX-dragX;
+        if(!moved&&Math.abs(delta)<4)return;
+        moved=true;track.setPointerCapture(event.pointerId);
+        offset+=delta;dragX=event.clientX;event.preventDefault();
+      });
+      ['pointerup','pointercancel','lostpointercapture'].forEach(type=>track.addEventListener(type,()=>{dragging=false}));
+      track.addEventListener('click',event=>{if(moved){event.preventDefault();event.stopPropagation();moved=false}},true);
+      frame=requestAnimationFrame(move);
+      return ()=>{stopped=true;cancelAnimationFrame(frame)};
+    }
+    // Profile service rows AND its persistent booking CTA use one familiar chooser.
+    overlay.addEventListener('click',event=>{
+      if(!event.target.closest('[data-master-book],.tanem-service-book,#stdMasterPageBook,.tn22-master-book'))return;
+      event.preventDefault();event.stopImmediatePropagation();
+      if(desktop)document.getElementById('stdHeaderBookBtn')?.click();
+      else document.querySelector('#tn13Top .tn22-cta')?.click();
+    },true);
+    document.addEventListener('click',event=>{
+      const trigger=event.target.closest('[data-desktop-master],[data-mid],[data-sheet-mid]');
+      if(trigger)selectedId=trigger.dataset.desktopMaster||trigger.dataset.mid||trigger.dataset.sheetMid||'';
+    },true);
+    new MutationObserver(()=>{
+      if(!overlay.classList.contains('open')){
+        stopServiceToggle();stopReviewMotion();
+        // Reopening from browser Forward may remove .closing before the next
+        // animation frame adds .open. That intermediate state is not a close.
+        if(restoringHistoryProfile)return;
+        if(historyEntryOpen&&history.state?.[historyKey]){
+          const state={...history.state};
+          delete state[historyKey];
+          history.replaceState(state,'');
+        }
+        historyEntryOpen=false;
+        return;
+      }
+      restoringHistoryProfile=false;
+      const fallbackName=overlay.querySelector(desktop?'.std-master-profile h2':'.tn22-profile h1')?.textContent;
+      const master=(data.team||[]).find(item=>item.id===selectedId)||
+        (data.team||[]).find(item=>text(item.name,'ru')===fallbackName);
+      if(master){
+        render(master);
+        if(!historyEntryOpen){
+          history.pushState({...history.state,[historyKey]:master.id},'');
+          historyEntryOpen=true;
+        }
+      }
+    }).observe(overlay,{attributes:true,attributeFilter:['class']});
+    window.addEventListener('popstate',()=>{
+      const masterId=history.state?.[historyKey];
+      historyEntryOpen=!!masterId;
+      if(masterId){
+        const master=(data.team||[]).find(item=>item.id===masterId);
+        if(!master)return;
+        selectedId=masterId;
+        if(overlay.classList.contains('open'))render(master);
+        else{
+          const trigger=[...document.querySelectorAll('[data-desktop-master],[data-mid]')]
+            .find(button=>(button.dataset.desktopMaster||button.dataset.mid)===masterId);
+          if(trigger){
+            restoringHistoryProfile=true;
+            trigger.click();
+          }
+        }
+        return;
+      }
+      restoringHistoryProfile=false;
+      if(!overlay.classList.contains('open'))return;
+      nestedCloseSelectors.forEach(selector=>document.querySelector(selector)?.click());
+      overlay.querySelector(profileCloseSelector)?.click();
+    });
+    // Handle Escape before the individual dialogs so only the top layer closes.
+    document.addEventListener('keydown',event=>{
+      if(event.key!=='Escape'||!overlay.classList.contains('open'))return;
+      const close=nestedCloseSelectors.map(selector=>document.querySelector(selector)).find(Boolean)
+        ||overlay.querySelector(profileCloseSelector);
+      if(!close)return;
+      event.preventDefault();event.stopImmediatePropagation();
+      close.click();
+    },true);
+    overlay.addEventListener('scroll',()=>overlay.__tanemMasterUpdate?.(),{passive:true});
+    window.addEventListener('salon-template:languagechange',()=>{
+      if(!overlay.classList.contains('open'))return;
+      if(renderedLang===(currentLang()==='en'?'en':'ru'))return;
+      const master=(data.team||[]).find(item=>item.id===selectedId);
+      if(master)requestAnimationFrame(()=>render(master));
+    });
+  }
+
   window.addEventListener('salon-template:languagechange',apply);
   apply();
+  setupDesktopTeamPaging();
+  setupMasterProfiles();
   [80,260,700].forEach(delay=>window.setTimeout(apply,delay));
   window.setInterval(()=>applySchedule(currentLang()),60000);
 })();
