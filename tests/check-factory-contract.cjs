@@ -163,6 +163,7 @@ const runtime=fs.readFileSync(path.join(root,'site-runtime.js'),'utf8');
 const serviceRenderer=fs.readFileSync(path.join(root,'site-services.js'),'utf8');
 assert(index.indexOf('site-data.js')<index.indexOf("desktop?'desktop.js"),'site-data.js must load before either UI bundle');
 assert(index.indexOf('site-services.js')<index.indexOf("desktop?'desktop.js"),'shared service renderer must load before either UI bundle');
+assert(mobile.includes('salon-palette.css?v=tanem-components-20261108-v1'),'mobile must load the current shared component palette');
 assert(index.includes('site-runtime.js'),'the production hydration runtime must load');
 assert(index.includes("matchMedia('(min-width:1024px)').matches"),'wide touch devices must use the desktop layout');
 assert(index.includes('(hover:hover) and (pointer:fine), (min-width:1024px)'),'wide touch devices must receive desktop styles');
@@ -171,6 +172,9 @@ assert(desktop.includes('DESKTOP_SERVICE_TABS.length<=5'),'desktop must compact 
 assert(desktop.includes('DESKTOP_SERVICE_TABS=[...SERVICE_CATEGORIES]'),'desktop categories must not add a synthetic All tab');
 assert(!desktop.includes("activeServiceCategory==='Все'")&&!desktop.includes('mct-tab-all'),'desktop must not retain a legacy synthetic All category path');
 assert(desktop.includes('href="#salonDesktopTeam"'),'desktop navigation must include Team');
+const desktopNavOrder=['#salonDesktopServices','#salonDesktopPortfolio','#salonDesktopAbout','#salonDesktopTeam','#salonDesktopReviews','#salonDesktopContacts'];
+let desktopNavCursor=-1;
+for(const href of desktopNavOrder){const next=desktop.indexOf('href="'+href+'"',desktopNavCursor+1);assert(next>desktopNavCursor,'desktop navigation order must match the six-item contract');desktopNavCursor=next;}
 assert(desktop.includes('function clientServiceCard(item)'),'desktop production cards must use the shared renderer');
 assert(mobile.includes('SITE.services.map'),'mobile services must come from the unified source');
 assert(mobile.includes('function clientServiceLine(item)'),'mobile production rows must use the shared renderer');
@@ -187,6 +191,10 @@ assert(index.includes('favicon-source.png'),'salon template must use the TANEM s
 assert(!runtime.includes("node.hidden=!hasReviews"),'reviews must remain a permanent structural section');
 assert(!runtime.includes("node.hidden=!hasTeam"),'team must remain a permanent structural section');
 assert(runtime.includes('function setupMasterProfiles()')&&runtime.includes('function setupDesktopTeamPaging()'),'master profile and desktop team paging logic must be present');
+assert(runtime.includes('cards.length<=4')&&runtime.includes('Math.ceil(cards.length/4)'),'desktop team must page four masters at a time');
+assert(runtime.includes('items.slice(0,6)'),'master profile must preview six services before expanding');
+assert(runtime.includes('Math.floor(works.length/3)*3')&&runtime.includes('Math.min(9'),'desktop master portfolio must preview complete rows up to nine images');
+assert(![desktop,mobile,runtime,serviceRenderer].join('\\n').match(/data-eva-|eva-options-animation|Ева|EvaPavlina/i),'shared template code must not contain Eva-specific identifiers or content');
 assert(runtime.includes('masterReviews?.enabled!==true')&&runtime.includes('slice(0,9)'),'master reviews must be opt-in and capped at nine');
 assert(!desktop.includes('desktopGalleryLimits')&&!desktop.includes('items.slice(0,limit)'),'desktop gallery must not truncate supplied photos');
 assert(serviceRenderer.includes('tanem-service-variant-duration')&&serviceRenderer.includes('duration(v.duration,lang)'),'variant-specific durations must be rendered');
