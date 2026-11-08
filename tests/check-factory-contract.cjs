@@ -202,6 +202,7 @@ assert(runtime.includes('cards.length<=4')&&runtime.includes('Math.ceil(cards.le
 assert(runtime.includes('items.slice(0,6)'),'master profile must preview six services before expanding');
 assert(runtime.includes('Math.floor(works.length/3)*3')&&runtime.includes('Math.min(9'),'desktop master portfolio must preview complete rows up to nine images');
 assert(![desktop,mobile,runtime,serviceRenderer].join('\\n').match(/data-eva-|eva-options-animation|Ева|EvaPavlina/i),'shared template code must not contain Eva-specific identifiers or content');
+assert(!/Юлия|Эльвира|Дарья|Анна|Марина|Олеся/.test(runtime),'shared master profile logic must not hardcode the previous client team names');
 assert(runtime.includes('masterReviews?.enabled!==true')&&runtime.includes('slice(0,9)'),'master reviews must be opt-in and capped at nine');
 assert(!desktop.includes('desktopGalleryLimits')&&!desktop.includes('items.slice(0,limit)'),'desktop gallery must not truncate supplied photos');
 assert(serviceRenderer.includes('tanem-service-variant-duration')&&serviceRenderer.includes('duration(v.duration,lang)'),'variant-specific durations must be rendered');
