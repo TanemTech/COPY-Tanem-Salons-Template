@@ -169,6 +169,7 @@ assert(index.includes('(hover:hover) and (pointer:fine), (min-width:1024px)'),'w
 assert(desktop.includes('SITE.services.filter'),'desktop services must come from the unified source');
 assert(desktop.includes('DESKTOP_SERVICE_TABS.length<=5'),'desktop must compact up to five real service categories');
 assert(desktop.includes('DESKTOP_SERVICE_TABS=[...SERVICE_CATEGORIES]'),'desktop categories must not add a synthetic All tab');
+assert(!desktop.includes("activeServiceCategory==='Все'")&&!desktop.includes('mct-tab-all'),'desktop must not retain a legacy synthetic All category path');
 assert(desktop.includes('href="#salonDesktopTeam"'),'desktop navigation must include Team');
 assert(desktop.includes('function clientServiceCard(item)'),'desktop production cards must use the shared renderer');
 assert(mobile.includes('SITE.services.map'),'mobile services must come from the unified source');
