@@ -202,19 +202,22 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
       local(service.price,`${field}.price`);
       local(service.duration,`${field}.duration`);
       local(service.description,`${field}.description`);
+      local(service.optionsLabel,`${field}.optionsLabel`);
+      if(service.variantType!==undefined)string(service.variantType,`${field}.variantType`);
+      if(service.variantType&&service.variantType!=='length'&&!service.optionsLabel)
+        add(`${field}.optionsLabel`,'must be supplied for a custom variant type');
       if(array(service.variants,`${field}.variants`))service.variants.forEach((variant,variantIndex)=>{
         const variantField=`${field}.variants[${variantIndex}]`;
         if(!object(variant,variantField))return;
-        local(variant.label,`${variantField}.label`);
+        local(variant.label,`${variantField}.label`,{required:true});
         local(variant.duration,`${variantField}.duration`);
         local(variant.price,`${variantField}.price`);
-        if(!variant.label&&!variant.duration&&!variant.price)add(variantField,'must contain a label, duration or price');
       });
     });
   }
 
   if(object(data.media,'media')){
-    // Client logo is optional. hero.webp, profile.webp and 1..25 real gallery photos are the production media contract.
+    // Client logo is optional. hero.webp, profile.webp and one or more real gallery photos are the production media contract; there is no artificial gallery cap.
     if(data.media.logo)media(data.media.logo,'media.logo');
     media(data.media.about,'media.about',{required:production});
     if(Object.prototype.hasOwnProperty.call(data.media,'heroDesktop'))add('media.heroDesktop','obsolete field; use the same hero.webp on mobile and desktop');
@@ -232,7 +235,7 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
       if(typeof source==='string'&&source.trim())gallerySources.add(source.trim());
     });
     if(production&&gallerySources.size<1)add('media.gallery','must contain at least one real gallery-XX.webp photo');
-    if(gallerySources.size>25)add('media.gallery','must contain at most 25 unique gallery photos');
+    // The gallery is intentionally unlimited. Keep all supplied, validated photographs.
   }
 
   const reviewIds=new Set();
@@ -249,6 +252,11 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
     if(review.url)url(review.url,`${field}.url`);
   });
 
+  if(data.masterReviews!==undefined){
+    if(object(data.masterReviews,'masterReviews')&&typeof data.masterReviews.enabled!=='boolean')
+      add('masterReviews.enabled','must be a boolean; true only after specialist review links are verified');
+  }
+
   const teamIds=new Set();
   if(array(data.team,'team'))data.team.forEach((member,index)=>{
     const field=`team[${index}]`;
@@ -261,8 +269,24 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
     local(member.about,`${field}.about`,{required:production});
     if(production||member.photo)media(member.photo,`${field}.photo`,{required:production});
     if(array(member.categories,`${field}.categories`))member.categories.forEach((category,categoryIndex)=>{if(!categories.has(category))add(`${field}.categories[${categoryIndex}]`,'must exist in categoryLabels')});
+    if(array(member.serviceIds,`${field}.serviceIds`)){
+      const seenServices=new Set();
+      member.serviceIds.forEach((id,serviceIndex)=>{
+        if(!serviceIds.has(id))add(`${field}.serviceIds[${serviceIndex}]`,'must reference an existing service');
+        if(seenServices.has(id))add(`${field}.serviceIds[${serviceIndex}]`,'must not duplicate an earlier service ID');
+        seenServices.add(id);
+      });
+    }
     if(array(member.work,`${field}.work`))member.work.forEach((item,workIndex)=>media(item,`${field}.work[${workIndex}]`,{required:true}));
-    if(array(member.reviewIds,`${field}.reviewIds`))member.reviewIds.forEach((id,reviewIndex)=>{if(!reviewIds.has(id))add(`${field}.reviewIds[${reviewIndex}]`,'must reference an existing review')});
+    if(array(member.reviewIds,`${field}.reviewIds`)){
+      if(member.reviewIds.length>9)add(`${field}.reviewIds`,'must contain at most 9 verified reviews; only 9 are displayed in a master profile');
+      const seenReviews=new Set();
+      member.reviewIds.forEach((id,reviewIndex)=>{
+        if(!reviewIds.has(id))add(`${field}.reviewIds[${reviewIndex}]`,'must reference an existing review');
+        if(seenReviews.has(id))add(`${field}.reviewIds[${reviewIndex}]`,'must not duplicate an earlier review ID');
+        seenReviews.add(id);
+      });
+    }
   });
 
   if(production)scanPlaceholders(data,'');
