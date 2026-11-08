@@ -53,6 +53,7 @@ jobs:
             node tests/validate-site-data.cjs --production
           fi
           node tests/validate-site-data.cjs tests/fixtures/site-data.production.js --production
+          node tests/validate-site-data.cjs tests/fixtures/site-data.master-profile.js --production
           node tests/check-factory-contract.cjs
 
   visual-regression:
@@ -101,6 +102,14 @@ jobs:
           sleep 2
           python tests/factory_browser.py
           CLIENT_SITE_URL=http://127.0.0.1:4175 python tests/client_smoke.py --engine chromium
+      - name: Exercise a populated master profile in Chromium
+        run: |
+          mkdir -p /tmp/salon-master-profile
+          cp -R . /tmp/salon-master-profile/
+          cp tests/fixtures/site-data.master-profile.js /tmp/salon-master-profile/site-data.js
+          python -m http.server 4177 --bind 127.0.0.1 --directory /tmp/salon-master-profile > /tmp/salon-master-profile.log 2>&1 &
+          sleep 2
+          CLIENT_SITE_URL=http://127.0.0.1:4177 python tests/client_smoke.py --engine chromium
       - name: Smoke test the actual populated client site
         if: needs.compare-to-approved-template.outputs.production == 'true'
         run: |
@@ -167,6 +176,14 @@ jobs:
           python -m http.server 4175 --bind 127.0.0.1 --directory /tmp/salon-production-webkit > /tmp/salon-production-webkit.log 2>&1 &
           sleep 2
           CLIENT_SITE_URL=http://127.0.0.1:4175 python tests/client_smoke.py --engine webkit
+      - name: Exercise a populated master profile in WebKit
+        run: |
+          mkdir -p /tmp/salon-master-profile-webkit
+          cp -R . /tmp/salon-master-profile-webkit/
+          cp tests/fixtures/site-data.master-profile.js /tmp/salon-master-profile-webkit/site-data.js
+          python -m http.server 4178 --bind 127.0.0.1 --directory /tmp/salon-master-profile-webkit > /tmp/salon-master-profile-webkit.log 2>&1 &
+          sleep 2
+          CLIENT_SITE_URL=http://127.0.0.1:4178 python tests/client_smoke.py --engine webkit
       - name: Attach WebKit comparison snapshots
         if: always()
         uses: actions/upload-artifact@v4
