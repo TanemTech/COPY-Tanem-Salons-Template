@@ -28,7 +28,7 @@ def verify_catalogue_variants(page, data, desktop, language):
     categories = data.get("categoryOrder") or list(data.get("categoryLabels", {}).keys())
     for category in categories:
         category_services = [item for item in services if item.get("category") == category]
-        for service in category_services[:8]:
+        for service_index, service in enumerate(category_services):
             variants = service.get("variants") or []
             if not variants:
                 continue
@@ -37,6 +37,11 @@ def verify_catalogue_variants(page, data, desktop, language):
             if tab.count():
                 tab.first.click(timeout=9000)
                 page.wait_for_timeout(100)
+            if service_index >= 8:
+                more = page.locator("#stdServiceMore" if desktop else "#tn13Services .tn31-service-more")
+                if more.count() and more.is_visible():
+                    more.click(timeout=9000)
+                    page.wait_for_timeout(500)
             card = page.locator('[data-tanem-service-id="' + service["id"] + '"]').first
             if not card.count():
                 continue
