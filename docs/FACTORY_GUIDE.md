@@ -159,11 +159,7 @@ Workflow `.github/workflows/pages.yml` при push в `main`:
 
 ### Первичное включение Pages
 
-Предпочтительный фабричный режим — один организационный секрет `TANEM_PAGES_TOKEN`, доступный клиентским репозиториям. Workflow передаёт его в `actions/configure-pages` с автоматическим enablement, поэтому новый репозиторий может включить Pages сам при первом production-push.
-
-Токен должен иметь право управлять Pages: для classic PAT — подходящий `repo` scope; для fine-grained token/GitHub App — необходимые `Pages: write` и `Administration: write` разрешения на клиентские репозитории.
-
-Если `TANEM_PAGES_TOKEN` не настроен, Pages включается один раз вручную: `Settings → Pages → Build and deployment → Source → GitHub Actions`. После этого все дальнейшие push в `main` публикуются автоматически.
+После проверок и push в `main` запустите `scripts/publish-pages.sh` по [DEPLOYMENT.md](../DEPLOYMENT.md#автопубликация-превью-github-pages). Команда сама включает Pages и возвращает проверенный адрес превью и ссылку на запуск Actions.
 
 ## Новый клиентский репозиторий
 
