@@ -202,6 +202,7 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
       local(service.price,`${field}.price`);
       local(service.duration,`${field}.duration`);
       local(service.description,`${field}.description`);
+      if(service.variantType!==undefined&&!['length','default'].includes(service.variantType))add(`${field}.variantType`,'must be length or default');
       if(array(service.variants,`${field}.variants`))service.variants.forEach((variant,variantIndex)=>{
         const variantField=`${field}.variants[${variantIndex}]`;
         if(!object(variant,variantField))return;
@@ -214,7 +215,7 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
   }
 
   if(object(data.media,'media')){
-    // Client logo is optional. hero.webp, profile.webp and 1..25 real gallery photos are the production media contract.
+    // Client logo is optional. hero.webp, profile.webp and every real gallery photo listed in media.gallery are the production media contract.
     if(data.media.logo)media(data.media.logo,'media.logo');
     media(data.media.about,'media.about',{required:production});
     if(Object.prototype.hasOwnProperty.call(data.media,'heroDesktop'))add('media.heroDesktop','obsolete field; use the same hero.webp on mobile and desktop');
@@ -232,7 +233,6 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
       if(typeof source==='string'&&source.trim())gallerySources.add(source.trim());
     });
     if(production&&gallerySources.size<1)add('media.gallery','must contain at least one real gallery-XX.webp photo');
-    if(gallerySources.size>25)add('media.gallery','must contain at most 25 unique gallery photos');
   }
 
   const reviewIds=new Set();
@@ -261,6 +261,15 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
     local(member.about,`${field}.about`,{required:production});
     if(production||member.photo)media(member.photo,`${field}.photo`,{required:production});
     if(array(member.categories,`${field}.categories`))member.categories.forEach((category,categoryIndex)=>{if(!categories.has(category))add(`${field}.categories[${categoryIndex}]`,'must exist in categoryLabels')});
+    if(member.serviceIds!==undefined&&array(member.serviceIds,`${field}.serviceIds`)){
+      const linked=new Set();
+      member.serviceIds.forEach((id,serviceIndex)=>{
+        const linkField=`${field}.serviceIds[${serviceIndex}]`;
+        if(!serviceIds.has(id))add(linkField,'must reference an existing service');
+        if(linked.has(id))add(linkField,'must not repeat a service');
+        linked.add(id);
+      });
+    }
     if(array(member.work,`${field}.work`))member.work.forEach((item,workIndex)=>media(item,`${field}.work[${workIndex}]`,{required:true}));
     if(array(member.reviewIds,`${field}.reviewIds`))member.reviewIds.forEach((id,reviewIndex)=>{if(!reviewIds.has(id))add(`${field}.reviewIds[${reviewIndex}]`,'must reference an existing review')});
   });

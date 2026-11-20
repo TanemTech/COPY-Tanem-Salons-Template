@@ -35,7 +35,8 @@ jobs:
         id: site_mode
         shell: bash
         run: |
-          if node -e "const v=require('./tests/validate-site-data.cjs');process.exit(v.loadSiteData('site-data.js').mode==='production'?0:1)"; then
+          mode=$(node -e "const {loadSiteData}=require('./tests/validate-site-data.cjs');const {mode}=loadSiteData('site-data.js');if(!['production','template'].includes(mode))throw Error('Invalid site mode');process.stdout.write(mode)")
+          if [[ "$mode" = production ]]; then
             echo "production=true" >> "$GITHUB_OUTPUT"
           else
             echo "production=false" >> "$GITHUB_OUTPUT"
@@ -50,6 +51,17 @@ jobs:
           fi
           git cat-file -e '79ea1c63864627b634528c6c6f39c997226f85c4^{commit}'
 
+      - name: Compare source photo inventory with the checked-out files
+        if: steps.site_mode.outputs.production == 'true'
+        run: |
+          if [[ -f business.json || -f intake/yandex/business.json ]]; then
+            if node scripts/check-intake.cjs > "$RUNNER_TEMP/tanem-intake.json"; then
+              node -e 'const report=require(process.argv[1]); console.log(`Intake ${report.input}: ${report.gallery.found}/${report.gallery.listed} listed gallery images available; ${report.missing.length} missing references, ${report.unlisted.length} unlisted files (informational)`)' "$RUNNER_TEMP/tanem-intake.json"
+            else
+              echo "::warning::Could not read the intake inventory. The assembled site is still validated separately."
+            fi
+          fi
+
       - name: Validate production contract
         if: steps.site_mode.outputs.production == 'true'
         run: |
@@ -62,43 +74,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf _site
-          mkdir -p _site
-
-          core_files=(
-            index.html
-            desktop.css
-            desktop.js
-            mobile.css
-            mobile-overrides.css
-            mobile.js
-            salon-palette.css
-            site-data.js
-            site-regions.js
-            site-runtime.js
-            favicon-source.png
-            logo-placeholder.svg
-            media-placeholder.svg
-          )
-
-          for file in "${core_files[@]}"; do
-            test -f "$file"
-            cp "$file" _site/
-          done
-
-          shopt -s nullglob
-          for file in hero.webp profile.webp gallery-*.webp team-*.webp logo.webp logo.png logo.svg; do
-            if [[ -f "$file" ]]; then
-              cp "$file" _site/
-            fi
-          done
-
-          touch _site/.nojekyll
-
-          test ! -e _site/intake
-          test ! -e _site/tests
-          test ! -e _site/docs
-          test ! -e _site/.github
+          bash scripts/package-pages.sh
+          (cd _site && node ../tests/validate-site-data.cjs --production)
 
       - name: Configure GitHub Pages
         if: steps.site_mode.outputs.production == 'true'

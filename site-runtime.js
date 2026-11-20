@@ -164,20 +164,21 @@
     const value=Number(data.rating?.value);
     const count=Number(data.rating?.count)||0;
     const hasRating=Number.isFinite(value)&&value>0;
+    const score=hasRating?new Intl.NumberFormat(lang,{minimumFractionDigits:1,maximumFractionDigits:1}).format(value):'—';
     const countCopy=lang==='hy'?`${count} գնահատական`:lang==='en'?`${count} rating${count===1?'':'s'}`:`${count} оцен${count%10===1&&count%100!==11?'ка':count%10>=2&&count%10<=4&&(count%100<12||count%100>14)?'ки':'ок'}`;
     const missing=lang==='hy'?'վարկանիշը նշված չէ':lang==='en'?'rating not specified':'рейтинг не указан';
     document.querySelectorAll('.dct-about-rating,.tn42-rating').forEach(node=>{
       const strong=node.querySelector('strong'),label=node.querySelector('span:last-child');
-      if(strong)strong.textContent=hasRating?String(value).replace('.',','):'—';
+      if(strong)strong.textContent=score;
       if(label)label.textContent=hasRating?countCopy:missing;
     });
     document.querySelectorAll('.std-reviews-score,.br-score,.tn30-score').forEach(node=>{
       const strong=node.querySelector('strong');
       const label=node.querySelector('.std-reviews-count,.br-count,.tn30-count');
-      if(strong)strong.textContent=hasRating?String(value).replace('.',','):'—';
+      if(strong)strong.textContent=score;
       if(label)label.textContent=hasRating?countCopy:missing;
     });
-    document.querySelectorAll('.std-reviews-stars').forEach(node=>node.setAttribute('aria-label',hasRating?`${value} / 5`:missing));
+    document.querySelectorAll('.std-reviews-stars').forEach(node=>node.setAttribute('aria-label',hasRating?`${score} / 5`:missing));
 
     const reviews=data.reviews||[];
     if(reviews.length)document.querySelectorAll('#salonDesktopReviews .std-review-card').forEach((card,index)=>{
@@ -345,8 +346,336 @@
     if(description)description.setAttribute('content',text(data.salon.heroDescription,lang)||text(data.salon.about,lang));
   }
 
+  function setupDesktopTeamPaging(){
+    const track=document.getElementById('stdTeamTrack');
+    if(!track)return;
+    const cards=[...track.children].filter(card=>card.classList.contains('std-master'));
+    if(cards.length<=4)return;
+    track.classList.add('tanem-paged-team');
+    let page=0;
+    const total=Math.ceil(cards.length/4);
+    const controls=document.createElement('div');
+    controls.className='tanem-team-controls';
+    controls.innerHTML='<button type="button" data-turn="-1" aria-label="Предыдущие мастера">←</button><span aria-live="polite"></span><button type="button" data-turn="1" aria-label="Следующие мастера">→</button>';
+    track.after(controls);
+    const update=()=>{
+      cards.forEach((card,i)=>{
+        card.hidden=Math.floor(i/4)!==page;
+        card.classList.toggle('tanem-team-solo',page===total-1&&cards.length%4===1&&i===cards.length-1);
+      });
+      controls.querySelector('span').textContent=(page+1)+' / '+total;
+    };
+    controls.querySelectorAll('[data-turn]').forEach(button=>button.addEventListener('click',()=>{
+      page=(page+Number(button.dataset.turn)+total)%total;
+      update();
+    }));
+    // Horizontal touch, mouse and trackpad gestures turn the same four-card pages.
+    let pointer=null,suppressClick=false,wheelDelta=0;
+    track.style.touchAction='pan-y';
+    track.addEventListener('pointerdown',event=>{
+      if(event.button!==0)return;
+      pointer={id:event.pointerId,x:event.clientX,y:event.clientY,moved:false};
+    });
+    track.addEventListener('pointermove',event=>{
+      if(!pointer||event.pointerId!==pointer.id)return;
+      if(Math.abs(event.clientX-pointer.x)>12&&Math.abs(event.clientX-pointer.x)>Math.abs(event.clientY-pointer.y))pointer.moved=true;
+    });
+    track.addEventListener('pointerup',event=>{
+      if(!pointer||event.pointerId!==pointer.id)return;
+      const dx=event.clientX-pointer.x,dy=event.clientY-pointer.y;
+      if(pointer.moved&&Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.2){
+        page=(page+(dx<0?1:-1)+total)%total;
+        update();
+        suppressClick=true;
+      }
+      pointer=null;
+    });
+    track.addEventListener('pointercancel',()=>{pointer=null});
+    track.addEventListener('click',event=>{
+      if(!suppressClick)return;
+      suppressClick=false;event.preventDefault();event.stopImmediatePropagation();
+    },true);
+    track.addEventListener('wheel',event=>{
+      if(Math.abs(event.deltaX)<=Math.abs(event.deltaY)*1.4||Math.abs(event.deltaX)<3)return;
+      event.preventDefault();
+      wheelDelta+=event.deltaX;
+      if(Math.abs(wheelDelta)>65){page=(page+(wheelDelta>0?1:-1)+total)%total;update();wheelDelta=0}
+    },{passive:false});
+    update();
+  }
+
+  function setupMasterProfiles(){
+    const desktop=window.__BR_DESKTOP_DEVICE__===true;
+    const overlay=document.querySelector(desktop?'#stdMasterOverlay':'.tn22-master-page');
+    if(!overlay||!data.team?.length)return;
+    let selectedId='';
+    let renderedMasterId='',renderedLang='';
+    let stopServiceToggle=()=>{};
+    let historyEntryOpen=false;
+    let restoringHistoryProfile=false;
+    const historyKey='tanemMasterProfile';
+    const profileCloseSelector=desktop?'#stdMasterPageClose':'.tn22-back';
+    const nestedCloseSelectors=desktop?[
+      '#stdBookOverlay.open #stdBookClose',
+      '#stdGallery.open #stdGalleryClose',
+      '#stdGalleryBrowser.open #stdGalleryBrowserBack'
+    ]:[
+      '#tn13BookSheet.open #tn13BookClose',
+      '.tn22-viewer.open .tn22-view-close',
+      '#tn13Gallery.open .tn22-gallery-back'
+    ];
+    const copy={
+      ru:{about:'О мастере',services:'Услуги',portfolio:'Портфолио',reviews:'Отзывы',book:'Записаться',more:'Показать все услуги',less:'Свернуть услуги',emptyServices:'Услуги уточняются в салоне.',emptyPortfolio:'Фотографии пока не добавлены.',emptyReviews:'Отзывы пока не добавлены.',gallery:'Открыть галерею',viewPhoto:'Посмотреть фотографию',read:'Подробнее'},
+      en:{about:'About',services:'Services',portfolio:'Portfolio',reviews:'Reviews',book:'Book',more:'Show all services',less:'Collapse services',emptyServices:'Check services with the salon.',emptyPortfolio:'Photos have not been added yet.',emptyReviews:'Reviews have not been added yet.',gallery:'Open gallery',viewPhoto:'View photo',read:'Read more'},
+      hy:{about:'Մասնագետի մասին',services:'Ծառայություններ',portfolio:'Պորտֆոլիո',reviews:'Կարծիքներ',book:'Ամրագրել',more:'Ցույց տալ բոլոր ծառայությունները',less:'Փակել ծառայությունները',emptyServices:'Ճշտեք ծառայությունները սրահում։',emptyPortfolio:'Լուսանկարներ դեռ չկան։',emptyReviews:'Կարծիքներ դեռ չկան։',gallery:'Բացել պատկերասրահը',viewPhoto:'Դիտել լուսանկարը',read:'Մանրամասն'},
+      uz:{about:'Mutaxassis haqida',services:'Xizmatlar',portfolio:'Portfolio',reviews:'Sharhlar',book:'Yozilish',more:'Barcha xizmatlarni ko‘rsatish',less:'Xizmatlarni yig‘ish',emptyServices:'Xizmatlarni salondan aniqlang.',emptyPortfolio:'Suratlar hali qo‘shilmagan.',emptyReviews:'Sharhlar hali qo‘shilmagan.',gallery:'Galereyani ochish',viewPhoto:'Suratni ko‘rish',read:'Batafsil'},
+      tg:{about:'Дар бораи мутахассис',services:'Хизматҳо',portfolio:'Намунаи корҳо',reviews:'Шарҳҳо',book:'Сабт шудан',more:'Ҳамаи хизматҳоро нишон диҳед',less:'Рӯйхатро пӯшед',emptyServices:'Хизматҳоро дар салон муайян кунед.',emptyPortfolio:'Аксҳо ҳанӯз илова нашудаанд.',emptyReviews:'Шарҳҳо ҳанӯз илова нашудаанд.',gallery:'Галереяро кушоед',viewPhoto:'Дидани акс',read:'Муфассал'}
+    };
+    const serviceById=new Map(data.services.map(service=>[service.id,service]));
+    const reviewById=new Map((data.reviews||[]).filter(review=>review.rating===5).map(review=>[review.id,review]));
+    const galleryBySrc=new Map();
+    for(const [category,items] of Object.entries(data.media.gallery)){
+      for(const photo of items){
+        const src=typeof photo==='string'?photo:photo.src;
+        if(!galleryBySrc.has(src))galleryBySrc.set(src,{category,alt:photo.alt});
+      }
+    }
+    function serviceMarkup(service,lang,masterId){
+      return window.TANEM_SERVICES.render({...service,profileId:masterId},desktop?'desktop':'mobile',lang);
+    }
+    function masterGallery(master){
+      return (master.work||[]).map(item=>{
+        const src=typeof item==='string'?item:item.src;
+        const galleryPhoto=galleryBySrc.get(src);
+        return {src,alt:item.alt||galleryPhoto?.alt||master.name,category:galleryPhoto?.category};
+      });
+    }
+    function reviewMarkup(review,lang,words){
+      const name=text(review.author,lang);
+      const url=review.url||data.contacts.reviewsUrl;
+      const link=typeof url==='string'&&url.startsWith('https://');
+      const tag=link?'a':'article';
+      const prefix=desktop?'std':'tn30';
+      return '<'+tag+' class="tanem-master-review '+prefix+'-review-card"'+(link?' href="'+esc(url)+'" target="_blank" rel="noopener noreferrer"':'')+'>'+
+        '<div class="'+prefix+'-review-head"><span class="'+prefix+'-review-avatar">'+esc([...name][0]||'')+'</span>'+
+        '<span><strong class="'+prefix+'-review-name">'+esc(name)+'</strong><span class="'+prefix+'-review-meta">'+esc(text(review.source,lang))+'</span>'+
+        '<span class="'+prefix+'-review-stars" aria-label="5 / 5">★★★★★</span></span></div>'+
+        '<p class="'+prefix+'-review-text">'+esc(text(review.text,lang))+'</p>'+
+        (link?'<span class="'+(desktop?'std-review-more':'tn30-review-open')+'">'+esc(words.read)+' →</span>':'')+'</'+tag+'>';
+    }
+    function render(master){
+      const lang=currentLang(),words=copy[lang]||copy.ru;
+      const target=overlay.querySelector(desktop?'#stdMasterPageContent':'.tn22-master-body');
+      if(!target)return;
+      stopServiceToggle();
+      const sameMaster=renderedMasterId===master.id;
+      const servicesExpanded=sameMaster&&target.querySelector('[data-master-expand]')?.getAttribute('aria-expanded')==='true';
+      const openOptions=new Set(sameMaster?[...target.querySelectorAll('.tanem-service-options')].filter(node=>node.dataset.expanded===undefined?node.open:node.dataset.expanded==='true').map(node=>node.closest('[data-tanem-service-id]').dataset.tanemServiceId):[]);
+      renderedMasterId=master.id;renderedLang=lang;
+      const items=(master.serviceIds||[]).map(id=>serviceById.get(id)).filter(Boolean);
+      const reviews=(master.reviewIds||[]).map(id=>reviewById.get(id)).filter(Boolean).slice(0,9);
+      const works=masterGallery(master);
+      const visibleWorks=desktop&&works.length>=3?works.slice(0,Math.min(9,Math.floor(works.length/3)*3)):works;
+      const tabs=['about','services','portfolio','reviews'];
+      const name=text(master.name,lang),role=text(master.role,lang),avatar=typeof master.photo==='string'?master.photo:master.photo?.src;
+      const moreLabel=words.more;
+      const lessLabel=words.less;
+      const sections=[
+        '<section class="tanem-master-section" id="tanem-master-about"><h3>'+esc(words.about)+'</h3><p class="tanem-master-bio">'+esc(text(master.about,lang))+'</p></section>',
+        '<section class="tanem-master-section" id="tanem-master-services"><h3>'+esc(words.services)+'</h3>'+
+          (items.length?'<div class="tanem-master-price-list">'+items.slice(0,6).map(item=>serviceMarkup(item,lang,master.id)).join('')+
+            (items.length>6?'<div class="tanem-master-extra"'+(servicesExpanded?'':' hidden')+'>'+(servicesExpanded?items.slice(6).map(item=>serviceMarkup(item,lang,master.id)).join(''):'')+'</div>':'')+'</div>':
+            '<p class="tanem-master-empty">'+esc(words.emptyServices)+'</p>')+
+          (items.length>6?'<button class="tanem-master-more" type="button" aria-expanded="'+String(!!servicesExpanded)+'" data-master-expand>'+esc(servicesExpanded?lessLabel:moreLabel)+' <span>'+(servicesExpanded?'↑':'↓')+'</span></button>':'')+'</section>',
+        '<section class="tanem-master-section" id="tanem-master-portfolio"><h3>'+esc(words.portfolio)+'</h3>'+
+          (works.length?'<div class="tanem-master-gallery'+(visibleWorks.length<=2?' is-paired':'')+'">'+visibleWorks.map((item,i)=>'<button type="button" data-master-work="'+i+'" aria-label="'+esc(words.viewPhoto)+'"><img src="'+esc(item.src)+'" alt="'+esc(text(item.alt,lang))+'" loading="lazy"></button>').join('')+'</div><button class="tanem-master-more" type="button" data-master-gallery>'+esc(words.gallery)+' <span aria-hidden="true">→</span></button>':
+            '<p class="tanem-master-empty">'+esc(words.emptyPortfolio)+'</p>')+'</section>',
+         '<section class="tanem-master-section" id="tanem-master-reviews"><h3>'+esc(words.reviews)+'</h3>'+
+          (reviews.length?'<div class="tanem-master-review-window is-static"><div class="tanem-master-review-track">'+
+            reviews.map(review=>reviewMarkup(review,lang,words)).join('')+'</div></div>':
+            '<p class="tanem-master-empty">'+esc(words.emptyReviews)+'</p>')+'</section>'
+      ];
+      target.innerHTML='<div class="tanem-master-head"><div class="tanem-master-photo">'+(avatar?'<img src="'+esc(avatar)+'" alt="'+esc(name)+'">':'')+'</div><h2>'+esc(name)+'</h2><p>'+esc(role)+'</p></div><div class="tanem-master-sections">'+sections.join('')+'</div>';
+      const existing=overlay.querySelector('.tanem-master-jump');
+      if(existing)existing.remove();
+      const nav=document.createElement('nav');nav.className='tanem-master-jump '+(desktop?'std-master-tabs':'tn22-master-tabs');nav.setAttribute('aria-label',[words.about,words.services,words.portfolio,words.reviews].join(', '));
+      nav.innerHTML=tabs.map((key,i)=>'<button type="button" data-jump="'+key+'" class="'+(i===0?'active':'')+'">'+esc(words[key])+'</button>').join('');
+      target.querySelector('.tanem-master-head').after(nav);
+      const updateNav=()=>{
+        const sections=[...target.querySelectorAll('.tanem-master-section')];
+        const stickyBottom=nav.getBoundingClientRect().bottom;
+        const atBottom=overlay.scrollTop>0&&overlay.scrollTop+overlay.clientHeight>=overlay.scrollHeight-3;
+        const active=atBottom?sections[sections.length-1]:[...sections].reverse().find(section=>section.getBoundingClientRect().top<=stickyBottom+52)||sections[0];
+        nav.querySelectorAll('[data-jump]').forEach((button,i)=>button.classList.toggle('active',active===sections[i]));
+      };
+      overlay.__tanemMasterUpdate=updateNav;
+      nav.querySelectorAll('[data-jump]').forEach(button=>button.addEventListener('click',()=>{
+        const section=target.querySelector('#tanem-master-'+button.dataset.jump);
+        if(!section)return;
+        const position=overlay.scrollTop+section.getBoundingClientRect().top-overlay.getBoundingClientRect().top-nav.offsetHeight-32;
+        overlay.scrollTo({top:position,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+      }));
+      const moreButton=target.querySelector('[data-master-expand]');
+      if(moreButton)stopServiceToggle=bindServiceToggle(moreButton,target.querySelector('.tanem-master-extra'),()=>{
+        const extra=target.querySelector('.tanem-master-extra');
+        extra.innerHTML=items.slice(6).map(item=>serviceMarkup(item,lang,master.id)).join('');
+        window.TANEM_SERVICES.enhance(extra);
+      },moreLabel,lessLabel,updateNav);
+      const openWorks=(index,showGallery,origin)=>{
+        document.dispatchEvent(new CustomEvent('tanem:open-master-gallery',{detail:{
+          items:works.map(item=>({src:item.src,alt:text(item.alt,lang)})),index,
+          category:works[index]?.category||works.find(photo=>photo.category)?.category,showGallery,origin
+        }}));
+      };
+      target.querySelectorAll('[data-master-work]').forEach(button=>button.addEventListener('click',()=>openWorks(Number(button.dataset.masterWork)||0,false,button)));
+      target.querySelector('[data-master-gallery]')?.addEventListener('click',event=>openWorks(0,true,event.currentTarget));
+      const book=overlay.querySelector(desktop?'#stdMasterPageBook':'.tn22-master-book');
+      if(book)book.textContent=words.book;
+      target.querySelectorAll('[data-tanem-service-id]').forEach(card=>{
+        const options=card.querySelector('.tanem-service-options');
+        if(options){
+          const isOpen=openOptions.has(card.dataset.tanemServiceId);
+          options.open=isOpen;
+          options.dataset.expanded=String(isOpen);
+          const summary=options.querySelector('summary');
+          summary?.setAttribute('aria-expanded',String(isOpen));
+          const label=options.querySelector('.tanem-options-label');
+          if(label)label.textContent=label.textContent.slice(0,-2)+(isOpen?' −':' +');
+        }
+      });
+      window.TANEM_SERVICES.enhance(target);
+      updateNav();
+    }
+    // Use the catalogue's height animation and follow the collapse button in
+    // the profile's own scroll container, with cleanup for rapid reversals.
+    function bindServiceToggle(button,extra,populate,moreLabel,lessLabel,updateNav){
+      let frame=0,timer=0,run=0,savedAnchor=null;
+      const unlock=()=>{if(savedAnchor!==null){overlay.style.overflowAnchor=savedAnchor;savedAnchor=null}};
+      const stabilize=anchorTop=>{
+        const delta=button.getBoundingClientRect().top-anchorTop;
+        if(Number.isFinite(delta)&&Math.abs(delta)>.5)overlay.scrollTo({top:Math.max(0,overlay.scrollTop+delta),behavior:'instant'});
+      };
+      button.onclick=()=>{
+        const expanded=button.getAttribute('aria-expanded')!=='true';
+        const anchorTop=button.getBoundingClientRect().top;
+        const startHeight=extra.hidden?0:extra.getBoundingClientRect().height;
+        const token=++run;
+        clearTimeout(timer);cancelAnimationFrame(frame);extra.ontransitionend=null;
+        if(savedAnchor===null){savedAnchor=overlay.style.overflowAnchor;overlay.style.overflowAnchor='none'}
+        if(expanded&&!extra.childElementCount)populate();
+        button.setAttribute('aria-expanded',String(expanded));
+        button.innerHTML=esc(expanded?lessLabel:moreLabel)+' <span>'+(expanded?'↑':'↓')+'</span>';
+        extra.hidden=false;
+        extra.style.transition='none';extra.style.height=startHeight+'px';
+        const endHeight=expanded?extra.scrollHeight:0;
+        const duration=window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:400;
+        const finish=()=>{
+          if(token!==run)return;
+          cancelAnimationFrame(frame);clearTimeout(timer);extra.ontransitionend=null;
+          extra.style.transition='none';extra.hidden=!expanded;extra.style.height=expanded?'auto':'';
+          if(!expanded)stabilize(anchorTop);
+          unlock();updateNav();
+        };
+        if(!duration||Math.abs(startHeight-endHeight)<1){finish();return}
+        extra.offsetHeight;
+        extra.style.transition='height '+duration+'ms cubic-bezier(.22,1,.36,1)';
+        const follow=()=>{
+          if(token!==run)return;
+          stabilize(anchorTop);updateNav();frame=requestAnimationFrame(follow);
+        };
+        frame=requestAnimationFrame(()=>{
+          if(token!==run)return;
+          extra.style.height=endHeight+'px';
+          if(!expanded)follow();
+        });
+        extra.ontransitionend=event=>{if(event.target===extra&&event.propertyName==='height')finish()};
+        timer=setTimeout(finish,duration+100);
+        updateNav();
+      };
+      return ()=>{++run;clearTimeout(timer);cancelAnimationFrame(frame);extra.ontransitionend=null;unlock()};
+    }
+    // Profile service rows AND its persistent booking CTA use one familiar chooser.
+    overlay.addEventListener('click',event=>{
+      if(!event.target.closest('[data-master-book],.tanem-service-book,#stdMasterPageBook,.tn22-master-book'))return;
+      event.preventDefault();event.stopImmediatePropagation();
+      if(desktop)document.getElementById('stdHeaderBookBtn')?.click();
+      else document.querySelector('#tn13Top .tn22-cta')?.click();
+    },true);
+    document.addEventListener('click',event=>{
+      const trigger=event.target.closest('[data-desktop-master],[data-mid],[data-sheet-mid]');
+      if(trigger)selectedId=trigger.dataset.desktopMaster||trigger.dataset.mid||trigger.dataset.sheetMid||'';
+    },true);
+    new MutationObserver(()=>{
+      if(!overlay.classList.contains('open')){
+        stopServiceToggle();
+        // Reopening from browser Forward may remove .closing before the next
+        // animation frame adds .open. That intermediate state is not a close.
+        if(restoringHistoryProfile)return;
+        if(historyEntryOpen&&history.state?.[historyKey]){
+          const state={...history.state};
+          delete state[historyKey];
+          history.replaceState(state,'');
+        }
+        historyEntryOpen=false;
+        return;
+      }
+      restoringHistoryProfile=false;
+      const fallbackName=overlay.querySelector(desktop?'.std-master-profile h2':'.tn22-profile h1')?.textContent;
+      const master=(data.team||[]).find(item=>item.id===selectedId)||
+        (data.team||[]).find(item=>text(item.name,'ru')===fallbackName);
+      if(master){
+        render(master);
+        if(!historyEntryOpen){
+          history.pushState({...history.state,[historyKey]:master.id},'');
+          historyEntryOpen=true;
+        }
+      }
+    }).observe(overlay,{attributes:true,attributeFilter:['class']});
+    window.addEventListener('popstate',()=>{
+      const masterId=history.state?.[historyKey];
+      historyEntryOpen=!!masterId;
+      if(masterId){
+        const master=(data.team||[]).find(item=>item.id===masterId);
+        if(!master)return;
+        selectedId=masterId;
+        if(overlay.classList.contains('open'))render(master);
+        else{
+          const trigger=[...document.querySelectorAll('[data-desktop-master],[data-mid]')]
+            .find(button=>(button.dataset.desktopMaster||button.dataset.mid)===masterId);
+          if(trigger){
+            restoringHistoryProfile=true;
+            trigger.click();
+          }
+        }
+        return;
+      }
+      restoringHistoryProfile=false;
+      if(!overlay.classList.contains('open'))return;
+      nestedCloseSelectors.forEach(selector=>document.querySelector(selector)?.click());
+      overlay.querySelector(profileCloseSelector)?.click();
+    });
+    // Handle Escape before the individual dialogs so only the top layer closes.
+    document.addEventListener('keydown',event=>{
+      if(event.key!=='Escape'||!overlay.classList.contains('open'))return;
+      const close=nestedCloseSelectors.map(selector=>document.querySelector(selector)).find(Boolean)
+        ||overlay.querySelector(profileCloseSelector);
+      if(!close)return;
+      event.preventDefault();event.stopImmediatePropagation();
+      close.click();
+    },true);
+    overlay.addEventListener('scroll',()=>overlay.__tanemMasterUpdate?.(),{passive:true});
+    window.addEventListener('salon-template:languagechange',()=>{
+      if(!overlay.classList.contains('open'))return;
+      if(renderedLang===currentLang())return;
+      const master=(data.team||[]).find(item=>item.id===selectedId);
+      if(master)requestAnimationFrame(()=>render(master));
+    });
+  }
+
   window.addEventListener('salon-template:languagechange',apply);
   apply();
+  setupDesktopTeamPaging();
+  setupMasterProfiles();
   [80,260,700].forEach(delay=>window.setTimeout(apply,delay));
   window.setInterval(()=>applySchedule(currentLang()),60000);
 })();

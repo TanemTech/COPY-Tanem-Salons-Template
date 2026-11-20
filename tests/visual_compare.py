@@ -142,7 +142,8 @@ def compare(a: bytes, b: bytes, filename: str):
     # squeezed 1–4-column category grids to naturally sized Esmeralda pills.
     # That small layout change affects ~3.4% of the screenshot; protect the
     # exact new pill/card geometry with verify_mobile_category_rails and keep
-    # every non-service screenshot and all desktop thresholds unchanged.
+    # every non-service screenshot unchanged, except the desktop gallery-open
+    # case, which has a narrow allowance for the intentionally added gallery tiles.
     if filename.startswith("mobile-") and filename.endswith("-services"):
         # Approved 03.10 changes: +10% category labels and a narrower price rail.
         limit = 0.065
@@ -151,6 +152,11 @@ def compare(a: bytes, b: bytes, filename: str):
         limit = 0.07
     elif filename.startswith("mobile-") and filename.endswith("-gallery-category"):
         limit = 0.035
+    elif filename.startswith("desktop-") and filename.endswith("-gallery-open"):
+        # The unlimited-gallery change intentionally adds every configured
+        # thumbnail to the desktop browser; verify the layout with browser
+        # geometry checks rather than treating the extra tiles as a regression.
+        limit = 0.02
     elif filename.startswith("mobile-") and filename.endswith("-hero"):
         limit = 0.02
     else:

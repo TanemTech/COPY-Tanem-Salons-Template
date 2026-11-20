@@ -32,7 +32,7 @@
   const bookSheet=root.querySelector('#tn13BookSheet');
   const closeBook=()=>{
     bookSheet.classList.remove('open');
-    document.body.style.overflow='';
+    if(!root.querySelector('.tn22-master-page.open'))document.body.style.overflow='';
   };
   root.querySelector('#tn13BookClose').addEventListener('click',closeBook);
   bookSheet.addEventListener('click',event=>{if(event.target===bookSheet)closeBook()});
@@ -71,6 +71,7 @@ const REVIEWS_URL=SITE.contacts.reviewsUrl||'#tn13Reviews';
 const PHONE=SITE.contacts.phone||'';
 const MESSENGER_URL=SITE.contacts.messengerUrl||'#tn13Visit';
 const SERVICES=SITE.services.map(service=>({
+  id:service.id,
   cat:service.category,
   title:russian(service.title),
   price:russian(service.price),
@@ -81,7 +82,7 @@ const SERVICES=SITE.services.map(service=>({
 const GALLERY=Object.fromEntries(
   Object.entries(SITE.media.gallery).map(([category,items])=>[category,items.map(mediaItem)])
 );
-const PORTFOLIO=SITE.media.portfolio.map(mediaItem);
+const PORTFOLIO=SITE.media.portfolio.slice(0,SITE.mode==='production'?7:undefined).map(mediaItem);
 const REVIEW_DATA=SITE.reviews.map(review=>[russian(review.author),russian(review.text)]);
 const MASTERS=SITE.team.map(master=>({
   id:master.id,
@@ -126,9 +127,17 @@ function clampViewerPan(){if(viewerScale<=1){viewerX=0;viewerY=0;return}const ma
 function applyViewerTransform(){clampViewerPan();vImg.style.transform=`translate3d(${viewerX}px,${viewerY}px,0) scale(${viewerScale})`}
 function resetViewerTransform(){viewerScale=1;viewerX=0;viewerY=0;pinchStart=0;pinchBaseScale=1;applyViewerTransform()}
 function paintViewer(){const it=viewerItems[viewerIndex];if(!it)return;vImg.src=it.src;vImg.alt=it.alt||'';vCount.textContent=`${String(viewerIndex+1).padStart(2,'0')} из ${String(viewerItems.length).padStart(2,'0')}`;resetViewerTransform();vPrev.hidden=viewerItems.length<2;vNext.hidden=viewerItems.length<2;}
-function openViewer(items,index=0,source='gallery'){viewerItems=Array.isArray(items)?items:[];if(!viewerItems.length)return;viewer.dataset.source=source;const galleryButton=viewer.querySelector('.tn22-view-gallery');if(galleryButton)galleryButton.hidden=source!=='portfolio';viewerIndex=Math.max(0,Math.min(index,viewerItems.length-1));paintViewer();viewer.classList.add('open');document.body.style.overflow='hidden'}
+function openViewer(items,index=0,source='gallery'){viewerItems=Array.isArray(items)?items:[];if(!viewerItems.length)return;viewer.dataset.source=source;const galleryButton=viewer.querySelector('.tn22-view-gallery');if(galleryButton)galleryButton.hidden=source!=='portfolio'&&source!=='master';viewerIndex=Math.max(0,Math.min(index,viewerItems.length-1));paintViewer();viewer.classList.add('open');document.body.style.overflow='hidden'}
 function closeViewer(){viewer.classList.remove('open');resetViewerTransform();if(!$('#tn13Gallery').classList.contains('open')&&!masterPage.classList.contains('open'))document.body.style.overflow=''}
-vPrev.onclick=()=>{viewerIndex=(viewerIndex-1+viewerItems.length)%viewerItems.length;paintViewer()};vNext.onclick=()=>{viewerIndex=(viewerIndex+1)%viewerItems.length;paintViewer()};viewer.querySelector('.tn22-view-close').onclick=closeViewer;viewer.querySelector('.tn22-view-gallery').onclick=e=>{const origin=e.currentTarget.getBoundingClientRect();closeViewer();openGallery('Салон',origin)};viewer.addEventListener('click',e=>{if(e.target===viewer)closeViewer()});
+vPrev.onclick=()=>{viewerIndex=(viewerIndex-1+viewerItems.length)%viewerItems.length;paintViewer()};vNext.onclick=()=>{viewerIndex=(viewerIndex+1)%viewerItems.length;paintViewer()};viewer.querySelector('.tn22-view-close').onclick=closeViewer;viewer.querySelector('.tn22-view-gallery').onclick=e=>{const origin=e.currentTarget.getBoundingClientRect();const context=viewer.dataset.source==='master'?masterGalleryContext:null;closeViewer();openGallery(context?.category||'Салон',origin)};viewer.addEventListener('click',e=>{if(e.target===viewer)closeViewer()});
+let masterGalleryContext=null;
+document.addEventListener('tanem:open-master-gallery',event=>{
+ const {items,index,category,showGallery,origin}=event.detail||{};
+ if(!Array.isArray(items)||!items.length)return;
+ masterGalleryContext={items,category};
+ if(showGallery)openGallery(category,origin);
+ else openViewer(items,index||0,'master');
+});
 vCanvas.addEventListener('touchstart',e=>{if(e.touches.length===2){e.preventDefault();gestureHadPinch=true;pinchStart=pinchDist(e);pinchBaseScale=viewerScale}else if(e.touches.length===1){sx=e.touches[0].clientX;sy=e.touches[0].clientY;panStartX=viewerX;panStartY=viewerY}},{passive:false});
 vCanvas.addEventListener('touchmove',e=>{if(e.touches.length===2&&pinchStart){e.preventDefault();viewerScale=Math.max(1,Math.min(4,pinchBaseScale*(pinchDist(e)/pinchStart)));if(viewerScale<=1.01){viewerScale=1;viewerX=0;viewerY=0}applyViewerTransform()}else if(e.touches.length===1&&viewerScale>1){e.preventDefault();viewerX=panStartX+(e.touches[0].clientX-sx);viewerY=panStartY+(e.touches[0].clientY-sy);applyViewerTransform()}},{passive:false});
 vCanvas.addEventListener('touchend',e=>{if(e.touches.length<2)pinchStart=0;if(e.touches.length===0){if(!gestureHadPinch&&viewerScale===1&&viewerItems.length>1&&e.changedTouches.length){const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.15)(dx<0?vNext:vPrev).click()}gestureHadPinch=false;if(viewerScale<=1.01)resetViewerTransform()}},{passive:false});
@@ -138,10 +147,31 @@ const gallery=$('#tn13Gallery');let galleryCat='Салон';
 function renderGallery(){
  const items=GALLERY[galleryCat]||[];
  const categories=Object.keys(GALLERY);
- gallery.innerHTML=`<div class="tn22-gallery"><div class="tn22-gallery-top"><button class="tn22-gallery-back" type="button">←</button><div class="tn22-gallery-title"><strong>${["en","hy"].includes(document.body.dataset.brLang)?"Gallery":"Галерея"}</strong><span>SALON NAME</span></div><div></div></div><div class="tn22-gallery-tabs-wrap"><div class="tn22-gallery-tabs">${categories.map(c=>`<button class="tn22-gallery-tab${c===galleryCat?' active':''}" type="button" data-gcat="${c}">${c}</button>`).join('')}</div></div><div class="tn22-gallery-grid${galleryCat==='Салон'?' salon':''}">${items.length?items.map((x,i)=>`<button class="tn22-gallery-tile" type="button" data-gi="${i}"><img loading="lazy" decoding="async" src="${x.src}" alt="${x.alt}"></button>`).join(''):'<div class="tn23-gallery-empty">Фотографии пока не добавлены</div>'}</div></div>`;
- gallery.querySelector('.tn22-gallery-back').onclick=closeGallery;
- gallery.querySelectorAll('[data-gcat]').forEach(b=>b.onclick=()=>{galleryCat=b.dataset.gcat;renderGallery()});
- gallery.querySelectorAll('[data-gi]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();openViewer(items,+b.dataset.gi,'gallery')});
+ // Keep the category rail mounted between selections so its horizontal scroll
+ // is not reset on long names such as "Перманентный макияж".
+ if(!gallery.querySelector('.tn22-gallery-tabs')){
+  gallery.innerHTML=`<div class="tn22-gallery"><div class="tn22-gallery-top"><button class="tn22-gallery-back" type="button">←</button><div class="tn22-gallery-title"><strong>${["en","hy"].includes(document.body.dataset.brLang)?"Gallery":"Галерея"}</strong><span>SALON NAME</span></div><div></div></div><div class="tn22-gallery-tabs-wrap"><div class="tn22-gallery-tabs">${categories.map(c=>`<button class="tn22-gallery-tab" type="button" data-gcat="${c}">${c}</button>`).join('')}</div></div><div class="tn22-gallery-grid"></div></div>`;
+  gallery.querySelector('.tn22-gallery-back').onclick=closeGallery;
+  gallery.querySelector('.tn22-gallery-tabs').onclick=e=>{
+   const tab=e.target.closest('[data-gcat]');
+   if(!tab)return;
+   galleryCat=tab.dataset.gcat;
+   renderGallery();
+  };
+  gallery.querySelector('.tn22-gallery-grid').onclick=e=>{
+   const tile=e.target.closest('[data-gi]');
+   if(!tile)return;
+   e.preventDefault();e.stopPropagation();
+   openViewer(GALLERY[galleryCat]||[],Number(tile.dataset.gi)||0,'gallery');
+  };
+ }
+ const galleryLang=document.body.dataset.brLang==='en'?'en':'ru';
+ const salonName=SITE.salon.name;
+ gallery.querySelector('.tn22-gallery-title span').textContent=typeof salonName==='string'?salonName:(salonName[galleryLang]||salonName.ru||salonName.en||'');
+ gallery.querySelectorAll('[data-gcat]').forEach(tab=>tab.classList.toggle('active',tab.dataset.gcat===galleryCat));
+ const grid=gallery.querySelector('.tn22-gallery-grid');
+ grid.classList.toggle('salon',galleryCat==='Салон');
+ grid.innerHTML=items.length?items.map((x,i)=>`<button class="tn22-gallery-tile" type="button" data-gi="${i}"><img loading="lazy" decoding="async" src="${x.src}" alt="${x.alt}"></button>`).join(''):'<div class="tn23-gallery-empty">Фотографии пока не добавлены</div>';
 }
 let galleryCloseTimer=0;
 function setGalleryOrigin(origin){
@@ -152,7 +182,7 @@ function setGalleryOrigin(origin){
  gallery.style.setProperty('--gallery-origin-x',x+'%');
  gallery.style.setProperty('--gallery-origin-y',y+'%');
 }
-function openGallery(cat='Салон',origin=null){clearTimeout(galleryCloseTimer);galleryCat=Object.prototype.hasOwnProperty.call(GALLERY,cat)?cat:'Салон';setGalleryOrigin(origin);renderGallery();gallery.classList.remove('closing');gallery.scrollTop=0;requestAnimationFrame(()=>gallery.classList.add('open'))}
+function openGallery(cat='Салон',origin=null){clearTimeout(galleryCloseTimer);galleryCat=Object.hasOwn(GALLERY,cat)?cat:Object.keys(GALLERY)[0];setGalleryOrigin(origin);renderGallery();gallery.classList.remove('closing');gallery.scrollTop=0;requestAnimationFrame(()=>gallery.classList.add('open'))}
 function closeGallery(){if(!gallery.classList.contains('open'))return;clearTimeout(galleryCloseTimer);gallery.classList.remove('open');gallery.classList.add('closing');galleryCloseTimer=setTimeout(()=>gallery.classList.remove('closing'),520)}
 const heroWorksLink=hero.querySelector('.tn22-worklink');if(heroWorksLink)heroWorksLink.onclick=e=>{e.preventDefault();openGallery('Салон',e.currentTarget)};
 
@@ -223,10 +253,16 @@ function serviceLine(s){
  '</div>';
 }
 function serviceWord(n){const n10=n%10,n100=n%100;if(n10===1&&n100!==11)return 'услугу';if(n10>=2&&n10<=4&&(n100<12||n100>14))return 'услуги';return 'услуг'}
+const serviceById=new Map(SITE.services.map(service=>[service.id,service]));
+function clientServiceLine(item){
+ const service=serviceById.get(item.id);
+ return SITE.mode==='production'&&service?window.TANEM_SERVICES.render(service,'mobile'):serviceLine(item);
+}
 /* Category selection must not auto-scroll the viewport or horizontal rail. */
 const MOBILE_SERVICE_PREVIEW_LIMIT=8;
 let mobileMoreWrap=null,mobileSavedScrollAnchor=null,mobileMoreAnchorRun=0;
 function bindMobileServiceControls(scope){
+ window.TANEM_SERVICES.enhance(scope);
  scope.querySelectorAll('.tn31-service-price').forEach(price=>{if(price.textContent.trim()==='—')price.hidden=true});
  scope.querySelectorAll('[data-book-service]').forEach(btn=>btn.onclick=book);
  scope.querySelectorAll('[data-service-details]').forEach(btn=>btn.onclick=()=>{
@@ -243,6 +279,7 @@ function resetMobileMore(){
  mobileMoreAnchorRun++;
  if(mobileMoreWrap){mobileMoreWrap.remove();mobileMoreWrap=null}
  servicesExpanded=false;
+ unlockMobileServiceAnchor();
 }
 function renderServices(){
  resetMobileMore();
@@ -259,7 +296,7 @@ function renderServices(){
  const arr=SERVICES.filter(s=>s.cat===serviceCat);
  const shown=arr.slice(0,MOBILE_SERVICE_PREVIEW_LIMIT);
  const remaining=Math.max(0,arr.length-MOBILE_SERVICE_PREVIEW_LIMIT);
- slist.innerHTML=shown.map(serviceLine).join('');
+ slist.innerHTML=shown.map(clientServiceLine).join('');
  bindMobileServiceControls(slist);
  sMore.hidden=arr.length<=MOBILE_SERVICE_PREVIEW_LIMIT;
  sMore.setAttribute('aria-expanded','false');
@@ -296,7 +333,7 @@ function unlockMobileServiceAnchor(){
  mobileSavedScrollAnchor=null;
 }
 function makeMobileExtraServices(){
- return SERVICES.filter(s=>s.cat===serviceCat).slice(MOBILE_SERVICE_PREVIEW_LIMIT).map(serviceLine).join('');
+ return SERVICES.filter(s=>s.cat===serviceCat).slice(MOBILE_SERVICE_PREVIEW_LIMIT).map(clientServiceLine).join('');
 }
 function paintMobileMoreButton(){
  const arr=SERVICES.filter(s=>s.cat===serviceCat);
@@ -342,6 +379,13 @@ sMore.onclick=()=>{
    wrap.ontransitionend=e=>{if(e.target===wrap&&e.propertyName==='height'&&!servicesExpanded){wrap.remove();mobileMoreWrap=null;stabilizeMobileMoreButton(anchorTop);unlockMobileServiceAnchor()}};
   }
  }
+ // A rapidly reversed transition may finish at the same height without transitionend.
+ if(duration)window.setTimeout(()=>{
+  if(token!==mobileMoreAnchorRun)return;
+  if(servicesExpanded&&mobileMoreWrap)mobileMoreWrap.style.height='auto';
+  else if(mobileMoreWrap){mobileMoreWrap.remove();mobileMoreWrap=null;stabilizeMobileMoreButton(anchorTop)}
+  unlockMobileServiceAnchor();
+ },duration+80);
 };
 window.addEventListener('salon-template:languagechange',e=>{
  updateServiceDurationLabels(e.detail&&e.detail.lang);
@@ -690,7 +734,7 @@ services.insertAdjacentElement('afterend',about);
       document.body.style.width='';
       document.body.style.overflow='';
       document.body.style.touchAction='';
-      window.scrollTo({top:lockedScrollY,left:0,behavior:'auto'});
+      window.scrollTo({top:lockedScrollY,left:0,behavior:'instant'});
       requestAnimationFrame(()=>{document.documentElement.style.scrollBehavior=previousScrollBehavior});
     }
   }
@@ -1057,7 +1101,7 @@ services.insertAdjacentElement('afterend',about);
   function skipText(node){
     var el=node.parentElement;
     if(!el) return true;
-    if(el.closest('.br-lang-switch')) return true;
+    if(el.closest('.br-lang-switch,.tanem-service-card,.tanem-master-head,.tanem-master-sections,.tanem-master-jump')) return true;
     if(el.closest('.tn30-review-card p,.br-review-card p,.tn22-master-review p')) return true;
     return /^(SCRIPT|STYLE|NOSCRIPT)$/.test(el.tagName);
   }
@@ -1089,6 +1133,7 @@ services.insertAdjacentElement('afterend',about);
     if(!scope) return;
     ['aria-label','title','alt'].forEach(function(attr){
       scope.querySelectorAll('['+attr+']').forEach(function(el){
+        if(el.closest('.tanem-service-card,.tanem-master-head,.tanem-master-sections,.tanem-master-jump'))return;
         var key='brI18n'+attr.replace(/-([a-z])/g,function(_,c){return c.toUpperCase();}).replace(/^./,function(c){return c.toUpperCase();});
         var source=el.dataset[key];
         var current=(el.getAttribute(attr)||'').trim();
@@ -1254,4 +1299,4 @@ services.insertAdjacentElement('afterend',about);
 })();
 
 /* salon-template-cold-neutral-20260924 */
-(function(){if(document.getElementById('salon-template-cold-neutral-20260924'))return;const lateCss=document.createElement('link');lateCss.id='salon-template-cold-neutral-20260924';lateCss.rel='stylesheet';lateCss.href='mobile-overrides.css?v=salon-20261003-v4';document.head.appendChild(lateCss);const paletteCss=document.createElement('link');paletteCss.id='tanem-salon-palette-v2';paletteCss.rel='stylesheet';paletteCss.href='salon-palette.css?v=salon-20261003-v2';document.head.appendChild(paletteCss);})();
+(function(){if(document.getElementById('salon-template-cold-neutral-20260924'))return;const lateCss=document.createElement('link');lateCss.id='salon-template-cold-neutral-20260924';lateCss.rel='stylesheet';lateCss.href='mobile-overrides.css?v=salon-20261003-v4';document.head.appendChild(lateCss);const paletteCss=document.createElement('link');paletteCss.id='tanem-salon-palette-v2';paletteCss.rel='stylesheet';paletteCss.href='salon-palette.css?v=salon-factory-v1';document.head.appendChild(paletteCss);})();
