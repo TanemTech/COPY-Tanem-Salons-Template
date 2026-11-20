@@ -132,13 +132,13 @@ function resetViewerTransform(){viewerScale=1;viewerX=0;viewerY=0;pinchStart=0;p
 function paintViewer(){const it=viewerItems[viewerIndex];if(!it)return;vImg.src=it.src;vImg.alt=it.alt||'';vCount.textContent=`${String(viewerIndex+1).padStart(2,'0')} из ${String(viewerItems.length).padStart(2,'0')}`;resetViewerTransform();vPrev.hidden=viewerItems.length<2;vNext.hidden=viewerItems.length<2;}
 function openViewer(items,index=0,source='gallery'){viewerItems=Array.isArray(items)?items:[];if(!viewerItems.length)return;viewer.dataset.source=source;const galleryButton=viewer.querySelector('.tn22-view-gallery');if(galleryButton)galleryButton.hidden=source!=='portfolio'&&source!=='master';viewerIndex=Math.max(0,Math.min(index,viewerItems.length-1));paintViewer();viewer.classList.add('open');document.body.style.overflow='hidden'}
 function closeViewer(){viewer.classList.remove('open');resetViewerTransform();if(!$('#tn13Gallery').classList.contains('open')&&!masterPage.classList.contains('open'))document.body.style.overflow=''}
-vPrev.onclick=()=>{viewerIndex=(viewerIndex-1+viewerItems.length)%viewerItems.length;paintViewer()};vNext.onclick=()=>{viewerIndex=(viewerIndex+1)%viewerItems.length;paintViewer()};viewer.querySelector('.tn22-view-close').onclick=closeViewer;viewer.querySelector('.tn22-view-gallery').onclick=e=>{const origin=e.currentTarget.getBoundingClientRect();const context=viewer.dataset.source==='master'?masterGalleryContext:null;closeViewer();openGallery(context?.category||'Салон',origin)};viewer.addEventListener('click',e=>{if(e.target===viewer)closeViewer()});
+vPrev.onclick=()=>{viewerIndex=(viewerIndex-1+viewerItems.length)%viewerItems.length;paintViewer()};vNext.onclick=()=>{viewerIndex=(viewerIndex+1)%viewerItems.length;paintViewer()};viewer.querySelector('.tn22-view-close').onclick=closeViewer;viewer.querySelector('.tn22-view-gallery').onclick=e=>{const origin=e.currentTarget.getBoundingClientRect();const context=viewer.dataset.source==='master'?masterGalleryContext:null;closeViewer();openGallery(context?.category||worksCategory,origin,context?.items)};viewer.addEventListener('click',e=>{if(e.target===viewer)closeViewer()});
 let masterGalleryContext=null;
 document.addEventListener('tanem:open-master-gallery',event=>{
  const {items,index,category,showGallery,origin}=event.detail||{};
  if(!Array.isArray(items)||!items.length)return;
  masterGalleryContext={items,category};
- if(showGallery)openGallery(category,origin);
+ if(showGallery)openGallery(category,origin,items);
  else openViewer(items,index||0,'master');
 });
 vCanvas.addEventListener('touchstart',e=>{if(e.touches.length===2){e.preventDefault();gestureHadPinch=true;pinchStart=pinchDist(e);pinchBaseScale=viewerScale}else if(e.touches.length===1){sx=e.touches[0].clientX;sy=e.touches[0].clientY;panStartX=viewerX;panStartY=viewerY}},{passive:false});
@@ -146,9 +146,9 @@ vCanvas.addEventListener('touchmove',e=>{if(e.touches.length===2&&pinchStart){e.
 vCanvas.addEventListener('touchend',e=>{if(e.touches.length<2)pinchStart=0;if(e.touches.length===0){if(!gestureHadPinch&&viewerScale===1&&viewerItems.length>1&&e.changedTouches.length){const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.15)(dx<0?vNext:vPrev).click()}gestureHadPinch=false;if(viewerScale<=1.01)resetViewerTransform()}},{passive:false});
 
 // GALLERY
-const gallery=$('#tn13Gallery');let galleryCat='Салон';
+const gallery=$('#tn13Gallery');let galleryCat='Салон',galleryScopeItems=null;
 function renderGallery(){
- const items=GALLERY[galleryCat]||[];
+ const items=galleryScopeItems||GALLERY[galleryCat]||[];
  const categories=Object.keys(GALLERY);
  // Keep the category rail mounted between selections so its horizontal scroll
  // is not reset on long names such as "Перманентный макияж".
@@ -165,12 +165,13 @@ function renderGallery(){
    const tile=e.target.closest('[data-gi]');
    if(!tile)return;
    e.preventDefault();e.stopPropagation();
-   openViewer(GALLERY[galleryCat]||[],Number(tile.dataset.gi)||0,'gallery');
+   openViewer(galleryScopeItems||GALLERY[galleryCat]||[],Number(tile.dataset.gi)||0,'gallery');
   };
  }
  const galleryLang=document.body.dataset.brLang==='en'?'en':'ru';
  const salonName=SITE.salon.name;
  gallery.querySelector('.tn22-gallery-title span').textContent=typeof salonName==='string'?salonName:(salonName[galleryLang]||salonName.ru||salonName.en||'');
+ gallery.querySelector('.tn22-gallery-tabs-wrap').hidden=!!galleryScopeItems;
  gallery.querySelectorAll('[data-gcat]').forEach(tab=>tab.classList.toggle('active',tab.dataset.gcat===galleryCat));
  const grid=gallery.querySelector('.tn22-gallery-grid');
  grid.classList.toggle('salon',galleryCat==='Салон');
@@ -185,7 +186,7 @@ function setGalleryOrigin(origin){
  gallery.style.setProperty('--gallery-origin-x',x+'%');
  gallery.style.setProperty('--gallery-origin-y',y+'%');
 }
-function openGallery(cat='Салон',origin=null){clearTimeout(galleryCloseTimer);galleryCat=Object.hasOwn(GALLERY,cat)?cat:Object.keys(GALLERY)[0];setGalleryOrigin(origin);renderGallery();gallery.classList.remove('closing');gallery.scrollTop=0;requestAnimationFrame(()=>gallery.classList.add('open'))}
+function openGallery(cat='Салон',origin=null,scopedItems=null){clearTimeout(galleryCloseTimer);galleryScopeItems=scopedItems;galleryCat=Object.hasOwn(GALLERY,cat)?cat:Object.keys(GALLERY)[0];setGalleryOrigin(origin);renderGallery();gallery.classList.remove('closing');gallery.scrollTop=0;requestAnimationFrame(()=>gallery.classList.add('open'))}
 function closeGallery(){if(!gallery.classList.contains('open'))return;clearTimeout(galleryCloseTimer);gallery.classList.remove('open');gallery.classList.add('closing');galleryCloseTimer=setTimeout(()=>gallery.classList.remove('closing'),520)}
 const heroWorksLink=hero.querySelector('.tn22-worklink');if(heroWorksLink)heroWorksLink.onclick=e=>{e.preventDefault();openGallery(worksCategory,e.currentTarget)};
 

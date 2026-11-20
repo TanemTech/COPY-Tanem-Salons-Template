@@ -509,11 +509,12 @@
     document.body.style.overflow='hidden';
   }
   let masterGalleryContext=null;
+  let galleryScopeItems=null;
   document.addEventListener('tanem:open-master-gallery',event=>{
     const {items,index,category,showGallery}=event.detail||{};
     if(!Array.isArray(items)||!items.length)return;
     masterGalleryContext={items,category};
-    if(showGallery)openDesktopGalleryBrowser(category);
+    if(showGallery)openDesktopGalleryBrowser(category,items);
     else openDesktopViewer(items,index||0,'master');
   });
   function closeDesktopViewer(){
@@ -529,7 +530,8 @@
 
   function renderDesktopGalleryBrowser(){
     const cats=Object.keys(DESKTOP_GALLERY_GROUPS);
-    const items=DESKTOP_GALLERY_GROUPS[galleryCategory]||[];
+    const items=galleryScopeItems||DESKTOP_GALLERY_GROUPS[galleryCategory]||[];
+    galleryBrowserTabs.hidden=!!galleryScopeItems;
     if(!galleryBrowserTabs.childElementCount){
       galleryBrowserTabs.innerHTML=cats.map(cat=>'<button class="std-gallery-browser-tab" type="button" data-gallery-category="'+cat+'">'+cat+'</button>').join('');
       galleryBrowserTabs.querySelectorAll('[data-gallery-category]').forEach(btn=>btn.onclick=()=>{
@@ -548,16 +550,17 @@
   galleryBrowserGrid.addEventListener("click",e=>{
     const tile=e.target.closest("[data-gallery-item]");
     if(!tile)return;
-    const items=DESKTOP_GALLERY_GROUPS[galleryCategory]||[];
+    const items=galleryScopeItems||DESKTOP_GALLERY_GROUPS[galleryCategory]||[];
     openDesktopViewer(items,Number(tile.dataset.galleryItem)||0,"gallery");
   });
   galleryBrowserGrid.addEventListener("pointerover",e=>{
     const tile=e.target.closest("[data-gallery-item]");
     if(!tile)return;
-    const item=(DESKTOP_GALLERY_GROUPS[galleryCategory]||[])[Number(tile.dataset.galleryItem)||0];
+    const item=(galleryScopeItems||DESKTOP_GALLERY_GROUPS[galleryCategory]||[])[Number(tile.dataset.galleryItem)||0];
     if(item)warmGalleryImage(item.src);
   },{passive:true});
-  function openDesktopGalleryBrowser(cat='Салон'){
+  function openDesktopGalleryBrowser(cat='Салон',scopedItems=null){
+    galleryScopeItems=scopedItems;
     galleryCategory=Object.hasOwn(DESKTOP_GALLERY_GROUPS,cat)?cat:Object.keys(DESKTOP_GALLERY_GROUPS)[0];
     renderDesktopGalleryBrowser();
     galleryBrowser.classList.add('open');
@@ -580,9 +583,9 @@
   document.getElementById('stdGalleryPrev').addEventListener('click',()=>moveDesktopGallery(-1));
   document.getElementById('stdGalleryNext').addEventListener('click',()=>moveDesktopGallery(1));
   galleryViewAll.addEventListener('click',()=>{
-    const category=gallery.dataset.source==='master'?masterGalleryContext?.category:worksCategory;
+    const context=gallery.dataset.source==='master'?masterGalleryContext:null;
     closeDesktopViewer();
-    openDesktopGalleryBrowser(category);
+    openDesktopGalleryBrowser(context?.category||worksCategory,context?.items);
   });
   gallery.addEventListener('click',e=>{if(e.target===gallery)closeDesktopViewer()});
 

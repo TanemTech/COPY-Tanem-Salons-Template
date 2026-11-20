@@ -149,7 +149,7 @@ const g1={src:'gallery-01.webp',alt:{ru:'Работа салона',en:'Salon wo
 const g2={src:'gallery-02.webp',alt:{ru:'Интерьер салона',en:'Salon interior'}};
 
 media: {
-  portfolio:[g1,g2],
+  portfolio:[g1],
   gallery:{
     'Работы':[g1],
     'Салон':[g2]

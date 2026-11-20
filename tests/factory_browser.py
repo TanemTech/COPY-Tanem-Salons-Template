@@ -285,12 +285,15 @@ def check_eva_components(browser, mobile, width, boundary=False):
     category = '[data-gcat="Волосы"]' if mobile else '[data-gallery-category="Волосы"]'
     gallery_panel = page.locator(gallery)
     gallery_panel.wait_for()
-    assert gallery_panel.locator(category).is_visible()
-    assert gallery_panel.locator(items).count() == 26
+    expect(gallery_panel.locator(category)).to_be_hidden()
+    expect(gallery_panel.locator(items)).to_have_count(11)
     gallery_panel.locator(".tn22-gallery-back" if mobile else "#stdGalleryBrowserBack").click()
     assert panel.count() == 1
     panel.locator(".tn22-back" if mobile else "#stdMasterPageClose").click()
     panel.wait_for(state="detached")
+    page.locator(".tn22-port-all" if mobile else "#stdOpenGallery").click()
+    expect(gallery_panel.locator(category)).to_be_visible()
+    expect(gallery_panel.locator(items)).to_have_count(26)
     context.close()
 
 
