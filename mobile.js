@@ -65,7 +65,7 @@ const localized=(value,lang='ru')=>{
   return value[lang]??value.ru??value.en??value.hy??'';
 };
 const russian=value=>localized(value,'ru');
-const mediaItem=item=>({src:item.src,alt:russian(item.alt)});
+const mediaItem=item=>typeof item==='string'?{src:item,alt:''}:{src:item.src,alt:russian(item.alt)};
 const MAP_URL=SITE.contacts.mapUrl||'#tn13Visit';
 const REVIEWS_URL=SITE.contacts.reviewsUrl||'#tn13Reviews';
 const PHONE=SITE.contacts.phone||'';
@@ -82,7 +82,10 @@ const SERVICES=SITE.services.map(service=>({
 const GALLERY=Object.fromEntries(
   Object.entries(SITE.media.gallery).map(([category,items])=>[category,items.map(mediaItem)])
 );
-const PORTFOLIO=SITE.media.portfolio.slice(0,SITE.mode==='production'?7:undefined).map(mediaItem);
+const worksCategory=SITE.mode==='production'
+ ? Object.keys(GALLERY).find(cat=>cat.trim().toLowerCase()!=='салон')||'Салон'
+ : 'Салон';
+const PORTFOLIO=(window.TANEM_PORTFOLIO_PREVIEW??SITE.media.portfolio).map(mediaItem);
 const REVIEW_DATA=SITE.reviews.map(review=>[russian(review.author),russian(review.text)]);
 const MASTERS=SITE.team.map(master=>({
   id:master.id,
@@ -129,13 +132,13 @@ function resetViewerTransform(){viewerScale=1;viewerX=0;viewerY=0;pinchStart=0;p
 function paintViewer(){const it=viewerItems[viewerIndex];if(!it)return;vImg.src=it.src;vImg.alt=it.alt||'';vCount.textContent=`${String(viewerIndex+1).padStart(2,'0')} из ${String(viewerItems.length).padStart(2,'0')}`;resetViewerTransform();vPrev.hidden=viewerItems.length<2;vNext.hidden=viewerItems.length<2;}
 function openViewer(items,index=0,source='gallery'){viewerItems=Array.isArray(items)?items:[];if(!viewerItems.length)return;viewer.dataset.source=source;const galleryButton=viewer.querySelector('.tn22-view-gallery');if(galleryButton)galleryButton.hidden=source!=='portfolio'&&source!=='master';viewerIndex=Math.max(0,Math.min(index,viewerItems.length-1));paintViewer();viewer.classList.add('open');document.body.style.overflow='hidden'}
 function closeViewer(){viewer.classList.remove('open');resetViewerTransform();if(!$('#tn13Gallery').classList.contains('open')&&!masterPage.classList.contains('open'))document.body.style.overflow=''}
-vPrev.onclick=()=>{viewerIndex=(viewerIndex-1+viewerItems.length)%viewerItems.length;paintViewer()};vNext.onclick=()=>{viewerIndex=(viewerIndex+1)%viewerItems.length;paintViewer()};viewer.querySelector('.tn22-view-close').onclick=closeViewer;viewer.querySelector('.tn22-view-gallery').onclick=e=>{const origin=e.currentTarget.getBoundingClientRect();const context=viewer.dataset.source==='master'?masterGalleryContext:null;closeViewer();openGallery(context?.category||'Салон',origin)};viewer.addEventListener('click',e=>{if(e.target===viewer)closeViewer()});
+vPrev.onclick=()=>{viewerIndex=(viewerIndex-1+viewerItems.length)%viewerItems.length;paintViewer()};vNext.onclick=()=>{viewerIndex=(viewerIndex+1)%viewerItems.length;paintViewer()};viewer.querySelector('.tn22-view-close').onclick=closeViewer;viewer.querySelector('.tn22-view-gallery').onclick=e=>{const origin=e.currentTarget.getBoundingClientRect();const context=viewer.dataset.source==='master'?masterGalleryContext:null;closeViewer();openGallery(context?.category||worksCategory,origin,context?.items)};viewer.addEventListener('click',e=>{if(e.target===viewer)closeViewer()});
 let masterGalleryContext=null;
 document.addEventListener('tanem:open-master-gallery',event=>{
  const {items,index,category,showGallery,origin}=event.detail||{};
  if(!Array.isArray(items)||!items.length)return;
  masterGalleryContext={items,category};
- if(showGallery)openGallery(category,origin);
+ if(showGallery)openGallery(category,origin,items);
  else openViewer(items,index||0,'master');
 });
 vCanvas.addEventListener('touchstart',e=>{if(e.touches.length===2){e.preventDefault();gestureHadPinch=true;pinchStart=pinchDist(e);pinchBaseScale=viewerScale}else if(e.touches.length===1){sx=e.touches[0].clientX;sy=e.touches[0].clientY;panStartX=viewerX;panStartY=viewerY}},{passive:false});
@@ -143,9 +146,9 @@ vCanvas.addEventListener('touchmove',e=>{if(e.touches.length===2&&pinchStart){e.
 vCanvas.addEventListener('touchend',e=>{if(e.touches.length<2)pinchStart=0;if(e.touches.length===0){if(!gestureHadPinch&&viewerScale===1&&viewerItems.length>1&&e.changedTouches.length){const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.15)(dx<0?vNext:vPrev).click()}gestureHadPinch=false;if(viewerScale<=1.01)resetViewerTransform()}},{passive:false});
 
 // GALLERY
-const gallery=$('#tn13Gallery');let galleryCat='Салон';
+const gallery=$('#tn13Gallery');let galleryCat='Салон',galleryScopeItems=null;
 function renderGallery(){
- const items=GALLERY[galleryCat]||[];
+ const items=galleryScopeItems||GALLERY[galleryCat]||[];
  const categories=Object.keys(GALLERY);
  // Keep the category rail mounted between selections so its horizontal scroll
  // is not reset on long names such as "Перманентный макияж".
@@ -162,12 +165,13 @@ function renderGallery(){
    const tile=e.target.closest('[data-gi]');
    if(!tile)return;
    e.preventDefault();e.stopPropagation();
-   openViewer(GALLERY[galleryCat]||[],Number(tile.dataset.gi)||0,'gallery');
+   openViewer(galleryScopeItems||GALLERY[galleryCat]||[],Number(tile.dataset.gi)||0,'gallery');
   };
  }
  const galleryLang=document.body.dataset.brLang==='en'?'en':'ru';
  const salonName=SITE.salon.name;
  gallery.querySelector('.tn22-gallery-title span').textContent=typeof salonName==='string'?salonName:(salonName[galleryLang]||salonName.ru||salonName.en||'');
+ gallery.querySelector('.tn22-gallery-tabs-wrap').hidden=!!galleryScopeItems;
  gallery.querySelectorAll('[data-gcat]').forEach(tab=>tab.classList.toggle('active',tab.dataset.gcat===galleryCat));
  const grid=gallery.querySelector('.tn22-gallery-grid');
  grid.classList.toggle('salon',galleryCat==='Салон');
@@ -182,9 +186,9 @@ function setGalleryOrigin(origin){
  gallery.style.setProperty('--gallery-origin-x',x+'%');
  gallery.style.setProperty('--gallery-origin-y',y+'%');
 }
-function openGallery(cat='Салон',origin=null){clearTimeout(galleryCloseTimer);galleryCat=Object.hasOwn(GALLERY,cat)?cat:Object.keys(GALLERY)[0];setGalleryOrigin(origin);renderGallery();gallery.classList.remove('closing');gallery.scrollTop=0;requestAnimationFrame(()=>gallery.classList.add('open'))}
+function openGallery(cat='Салон',origin=null,scopedItems=null){clearTimeout(galleryCloseTimer);galleryScopeItems=scopedItems;galleryCat=Object.hasOwn(GALLERY,cat)?cat:Object.keys(GALLERY)[0];setGalleryOrigin(origin);renderGallery();gallery.classList.remove('closing');gallery.scrollTop=0;requestAnimationFrame(()=>gallery.classList.add('open'))}
 function closeGallery(){if(!gallery.classList.contains('open'))return;clearTimeout(galleryCloseTimer);gallery.classList.remove('open');gallery.classList.add('closing');galleryCloseTimer=setTimeout(()=>gallery.classList.remove('closing'),520)}
-const heroWorksLink=hero.querySelector('.tn22-worklink');if(heroWorksLink)heroWorksLink.onclick=e=>{e.preventDefault();openGallery('Салон',e.currentTarget)};
+const heroWorksLink=hero.querySelector('.tn22-worklink');if(heroWorksLink)heroWorksLink.onclick=e=>{e.preventDefault();openGallery(worksCategory,e.currentTarget)};
 
 const sectionItems=[['tn13Portfolio','Портфолио'],['tn13Services','Услуги'],['tn38About','О нас'],['tn13Team','Команда'],['tn13Reviews','Отзывы'],['tn13Visit','Визит']];const sectionIds=sectionItems.map(x=>x[0]);const sectionNav=document.createElement('nav');sectionNav.className='tn23-section-nav';sectionNav.setAttribute('aria-hidden','true');sectionNav.innerHTML=sectionItems.map((x,i)=>`<button type="button" data-section="${x[0]}" class="${i===0?'active':''}">${x[1]}</button>`).join('');sectionNav.classList.add('salon-template-fixed-nav');document.body.appendChild(sectionNav);
 let activeSection='tn13Portfolio',navRaf=0,navTargetLock=null,navUnlockTimer=0;
@@ -198,7 +202,7 @@ function updateSectionNav(){navRaf=0;const heroPassed=window.scrollY>=Math.max(0
 window.addEventListener('scroll',()=>{if(!navRaf)navRaf=requestAnimationFrame(updateSectionNav)},{passive:true});window.addEventListener('resize',updateSectionNav,{passive:true});requestAnimationFrame(updateSectionNav);
 
 // PORTFOLIO
-const port=$('#tn13Portfolio');port.innerHTML=`<div class="tn22-port"><p class="tn22-kicker">Портфолио</p><h2>Наши работы</h2><div class="tn22-port-grid">${PORTFOLIO.map((x,i)=>`<button class="tn22-photo" type="button" data-pi="${i}"><img loading="lazy" decoding="async" src="${x.src}" alt="${x.alt}"></button>`).join('')}</div><button class="tn22-port-all" type="button">Открыть галерею <span>→</span></button></div>`;port.querySelectorAll('[data-pi]').forEach(b=>b.onclick=()=>openViewer(PORTFOLIO,+b.dataset.pi,'portfolio'));port.querySelector('.tn22-port-all').onclick=e=>openGallery('Салон',e.currentTarget);
+const port=$('#tn13Portfolio');port.innerHTML=`<div class="tn22-port"><p class="tn22-kicker">Портфолио</p><h2>Наши работы</h2><div class="tn22-port-grid">${PORTFOLIO.map((x,i)=>`<button class="tn22-photo" type="button" data-pi="${i}"><img loading="lazy" decoding="async" src="${x.src}" alt="${x.alt}"></button>`).join('')}</div><button class="tn22-port-all" type="button">Открыть галерею <span>→</span></button></div>`;port.querySelectorAll('[data-pi]').forEach(b=>b.onclick=()=>openViewer(PORTFOLIO,+b.dataset.pi,'portfolio'));port.querySelector('.tn22-port-all').onclick=e=>openGallery(worksCategory,e.currentTarget);
 
 // SERVICES
 const serv=$('#tn13Services');
@@ -397,15 +401,15 @@ if(document.fonts&&document.fonts.ready)
 renderServices();
 
 // TEAM + TEAM SHEET
-const team=$('#tn13Team');team.hidden=false;team.innerHTML=`<div class="tn22-team"><p class="tn22-kicker">Наша команда</p><h2>Мастера своего дела</h2><div class="tn22-team-grid">${DISPLAY_MASTERS.map(m=>m.placeholder?`<div class="tn22-master-card is-placeholder"><span class="tn22-master-circle">${masterAvatar(m)}</span><strong class="tn22-master-name">Мастер</strong><span class="tn22-master-role"></span></div>`:`<button class="tn22-master-card" type="button" data-mid="${m.id}"><span class="tn22-master-circle">${masterAvatar(m)}</span><strong class="tn22-master-name">${m.name}</strong><span class="tn22-master-role">${m.role}</span></button>`).join('')}</div><div class="tn42-team-hint">Листайте <span>→</span></div></div>`;
+const team=$('#tn13Team');team.hidden=false;team.innerHTML=`<div class="tn22-team"><p class="tn22-kicker">Наша команда</p><h2>Мастера своего дела</h2><div class="tn22-team-grid">${DISPLAY_MASTERS.map(m=>m.placeholder?`<${SITE.mode==='production'?'button type="button" data-empty-master="'+m.id+'"':'div'} class="tn22-master-card is-placeholder"><span class="tn22-master-circle">${masterAvatar(m)}</span><strong class="tn22-master-name">Мастер</strong><span class="tn22-master-role"></span></${SITE.mode==='production'?'button':'div'}>`:`<button class="tn22-master-card" type="button" data-mid="${m.id}"><span class="tn22-master-circle">${masterAvatar(m)}</span><strong class="tn22-master-name">${m.name}</strong><span class="tn22-master-role">${m.role}</span></button>`).join('')}</div><div class="tn42-team-hint">Листайте <span>→</span></div></div>`;
 const teamSheet=document.createElement('div');teamSheet.className='tn22-team-sheet';root.appendChild(teamSheet);
 
 // MASTER PAGE
 const masterPage=document.createElement('div');masterPage.className='tn22-master-page';masterPage.innerHTML=`<div class="tn22-master-shell"><div class="tn22-master-top"><button class="tn22-back" type="button">←</button><div class="tn22-master-brand">SALON NAME</div><span class="tn42-master-spacer" aria-hidden="true"></span></div><div class="tn22-master-body"></div></div><button class="tn22-master-book" type="button">Записаться онлайн</button>`;root.appendChild(masterPage);let masterCloseTimer=0;function closeMaster(){if(!masterPage.classList.contains('open'))return;clearTimeout(masterCloseTimer);masterPage.classList.remove('open');masterPage.classList.add('closing');masterCloseTimer=setTimeout(()=>masterPage.classList.remove('closing'),520)}masterPage.querySelector('.tn22-back').onclick=closeMaster;masterPage.querySelector('.tn22-master-book').onclick=book;let currentMaster=null,currentMasterTab='Профиль';
 function masterReviews(m){return REVIEW_DATA.filter(r=>m.reviewNames.includes(r[0]));}
 function renderMasterTab(){const body=masterPage.querySelector('.tn22-master-content');if(!body||!currentMaster)return;if(currentMasterTab==='Профиль'){body.innerHTML=`<h3>О мастере</h3><p class="tn22-master-about" style="text-align:left;margin:0">${currentMaster.about}</p>`}else if(currentMasterTab==='Услуги'){const arr=SERVICES.filter(s=>currentMaster.cats.includes(s.cat)).slice(0,8);body.innerHTML=`<h3>Услуги</h3>${arr.length?arr.map(s=>`<div class="tn22-master-service"><b>${s.title}</b><span>Записаться</span></div>`).join(''):'<p class="tn22-master-about" style="text-align:left;margin:0">Пока нет данных об услугах.</p>'}`}else if(currentMasterTab==='Портфолио'){body.innerHTML=`<h3>Портфолио</h3><div class="tn22-master-works">${currentMaster.work.length?currentMaster.work.map(src=>`<img loading="lazy" decoding="async" src="${src}" alt="Работа ${currentMaster.name}">`).join(''):'<p class="tn22-master-about" style="grid-column:1/-1;text-align:left;margin:0">Пока нет фото.</p>'}</div>`}else{const rs=masterReviews(currentMaster);body.innerHTML=`<h3>Отзывы</h3>${rs.length?rs.map(r=>`<div class="tn22-master-review"><strong>${r[0]}</strong><p>${r[1]}</p></div>`).join(''):'<p class="tn22-master-about" style="text-align:left;margin:0">Пока нет отзывов.</p>'}`}}
-function openMaster(id){currentMaster=MASTERS.find(m=>m.id===id);if(!currentMaster)return;currentMasterTab='Профиль';const b=masterPage.querySelector('.tn22-master-body');b.innerHTML=`<div class="tn22-profile"><div class="tn22-profile-circle">${masterAvatar(currentMaster)}</div><h1>${currentMaster.name}</h1><div class="tn22-profile-role">${currentMaster.role}</div><div class="tn22-salon-rating"><b>★</b> — <span>рейтинг не указан</span></div></div><div class="tn22-master-tabs">${['Профиль','Услуги','Портфолио','Отзывы'].map(t=>`<button class="${t==='Профиль'?'active':''}" type="button" data-mtab="${t}">${t}</button>`).join('')}</div><div class="tn22-master-content"></div>`;b.querySelectorAll('[data-mtab]').forEach(x=>x.onclick=()=>{currentMasterTab=x.dataset.mtab;b.querySelectorAll('[data-mtab]').forEach(y=>y.classList.toggle('active',y===x));renderMasterTab()});renderMasterTab();teamSheet.classList.remove('open');clearTimeout(masterCloseTimer);masterPage.classList.remove('closing');masterPage.scrollTop=0;requestAnimationFrame(()=>masterPage.classList.add('open'))}
-team.querySelectorAll('[data-mid]').forEach(b=>b.onclick=()=>openMaster(b.dataset.mid));teamSheet.querySelectorAll('[data-sheet-mid]').forEach(b=>b.onclick=()=>openMaster(b.dataset.sheetMid));
+function openMaster(id){currentMaster=DISPLAY_MASTERS.find(m=>m.id===id);if(!currentMaster)return;if(!currentMaster.placeholder){currentMasterTab='Профиль';const b=masterPage.querySelector('.tn22-master-body');b.innerHTML=`<div class="tn22-profile"><div class="tn22-profile-circle">${masterAvatar(currentMaster)}</div><h1>${currentMaster.name}</h1><div class="tn22-profile-role">${currentMaster.role}</div><div class="tn22-salon-rating"><b>★</b> — <span>рейтинг не указан</span></div></div><div class="tn22-master-tabs">${['Профиль','Услуги','Портфолио','Отзывы'].map(t=>`<button class="${t==='Профиль'?'active':''}" type="button" data-mtab="${t}">${t}</button>`).join('')}</div><div class="tn22-master-content"></div>`;b.querySelectorAll('[data-mtab]').forEach(x=>x.onclick=()=>{currentMasterTab=x.dataset.mtab;b.querySelectorAll('[data-mtab]').forEach(y=>y.classList.toggle('active',y===x));renderMasterTab()});renderMasterTab()}teamSheet.classList.remove('open');clearTimeout(masterCloseTimer);masterPage.classList.remove('closing');masterPage.scrollTop=0;requestAnimationFrame(()=>masterPage.classList.add('open'))}
+team.querySelectorAll('[data-mid],[data-empty-master]').forEach(b=>b.onclick=()=>openMaster(b.dataset.mid||b.dataset.emptyMaster));teamSheet.querySelectorAll('[data-sheet-mid]').forEach(b=>b.onclick=()=>openMaster(b.dataset.sheetMid));
 
 // REVIEWS
 const reviews=$('#tn13Reviews');

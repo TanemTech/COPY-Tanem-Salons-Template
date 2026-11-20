@@ -24,8 +24,12 @@ html[data-br-device="desktop"] #brBootIntro img{width:min(75vw,330px);max-height
 #brBootIntro.has-client-logo img{width:min(70vw,308px);max-height:53.2svh}
 html[data-br-device="desktop"] #brBootIntro.has-client-logo img{width:min(90vw,462px);max-height:67.2svh}
 #brBootIntro .br-intro-name{display:block;max-width:calc(100vw - 48px);margin:0;text-align:center;text-transform:uppercase;overflow-wrap:anywhere}
-#brBootIntro .br-intro-name.is-mobile{font:500 clamp(50.96px,12.74vw,116.48px)/.92 "Cormorant Garamond",Georgia,serif;letter-spacing:.16em;padding:24px 24px 24px calc(24px + .16em)}
+#brBootIntro .br-intro-name.is-mobile{box-sizing:border-box;overflow-wrap:normal;hyphens:none;font:500 clamp(50.96px,12.74vw,116.48px)/.92 "Cormorant Garamond",Georgia,serif;letter-spacing:.16em;padding:24px 24px 24px calc(24px + .16em)}
+#brBootIntro .br-intro-name.is-mobile span{display:inline-block;white-space:nowrap}
 #brBootIntro .br-intro-name.is-desktop{font:500 clamp(50.96px,12.74vw,116.48px)/.84 "Cormorant Garamond",Georgia,serif;letter-spacing:.105em;padding:24px 24px 24px calc(24px + .105em)}
+#salon-desktop-v1 #salonDesktopTeam .std-master[data-empty-master],
+#salon-mobile #tn13Team .tn22-master-card.is-placeholder[data-empty-master]{cursor:pointer!important;pointer-events:auto!important}
+:is(#stdMasterPageBook,.tn22-master-book)[hidden]{display:none!important}
 #brBootIntro.is-exiting{opacity:0;pointer-events:none}
 html.br-booting #salon-mobile,html.br-booting #salon-desktop-v1{visibility:hidden!important}
 #brLoadError{display:none;min-height:100svh;padding:32px;place-items:center;text-align:center}
@@ -37,9 +41,23 @@ html.br-booting #salon-mobile,html.br-booting #salon-desktop-v1{visibility:hidde
 <link rel="stylesheet" href="salon-palette.css?v=salon-factory-v1" media="(hover:hover) and (pointer:fine), (min-width:1024px)">
 <script src="site-data.js?v=salon-20261003-v1"></script>
 <script src="site-regions.js?v=salon-final-20260928-v2"></script>
-<script src="site-services.js?v=salon-factory-v1"></script>
+<script src="site-services.js?v=salon-eva-rules-v2"></script>
 <script>
 (()=>{
+ const site=window.TANEM_SITE_DATA;
+ if(site?.mode==='production'){
+  const works=new Set(),salon=new Set();
+  for(const [category,items] of Object.entries(site.media.gallery)){
+   const sources=category.trim().toLowerCase()==='салон'?salon:works;
+   for(const item of items)sources.add(typeof item==='string'?item:item.src);
+  }
+  window.TANEM_PORTFOLIO_PREVIEW=site.media.portfolio
+   .filter(item=>{
+    const src=typeof item==='string'?item:item.src;
+    return works.has(src)&&!salon.has(src);
+   })
+   .slice(0,7);
+ }
  const desktop=!!(window.matchMedia&&(matchMedia('(hover:hover) and (pointer:fine)').matches||matchMedia('(min-width:1024px)').matches));
  window.__BR_DESKTOP_DEVICE__=desktop;
  document.documentElement.dataset.brDevice=desktop?'desktop':'mobile';
@@ -76,7 +94,30 @@ html.br-booting #salon-mobile,html.br-booting #salon-desktop-v1{visibility:hidde
    const name=(site.salon?.name?.ru||site.salon?.name?.en||site.salon?.name||'TANEM');
    const logo=intro.querySelector('img');
    if(site.media?.logo){intro.classList.add('has-client-logo');logo.src=site.media.logo;logo.alt=name;}
-   else if(logo){const text=document.createElement('strong');text.className='br-intro-name '+(desktop?'is-desktop':'is-mobile');text.textContent=name;logo.replaceWith(text);}
+   else if(logo){
+     const text=document.createElement('strong');
+     text.className='br-intro-name '+(desktop?'is-desktop':'is-mobile');
+     text.textContent=name;
+     logo.replaceWith(text);
+     if(!desktop){
+       const words=name.trim().split(/\s+/u).map(word=>{
+         const span=document.createElement('span');
+         span.textContent=word;
+         return span;
+       });
+       text.replaceChildren(...words.flatMap((word,index)=>index?[' ',word]:[word]));
+       const fit=()=>{
+         if(!text.isConnected)return;
+         text.style.fontSize='';
+         const style=getComputedStyle(text);
+         const available=parseFloat(style.maxWidth)-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);
+         const longest=Math.max(...words.map(word=>word.getBoundingClientRect().width));
+         if(longest>available)text.style.fontSize=Math.floor(parseFloat(style.fontSize)*available/longest)+'px';
+       };
+       fit();
+       document.fonts?.ready.then(fit);
+     }
+   }
  }
  let closed=false,shown=false,readyTimer=0;
  function showApp(){
@@ -110,10 +151,10 @@ html.br-booting #salon-mobile,html.br-booting #salon-desktop-v1{visibility:hidde
    }else ready();
  }
  const script=document.createElement('script');
- script.src=desktop?'desktop.js?v=salon-factory-v1':'mobile.js?v=salon-factory-v1';
+ script.src=desktop?'desktop.js?v=salon-eva-rules-v2':'mobile.js?v=salon-eva-rules-v2';
  script.async=false;script.onload=()=>{
    const runtime=document.createElement('script');
-   runtime.src='site-runtime.js?v=salon-factory-v1';
+   runtime.src='site-runtime.js?v=salon-eva-rules-v2';
    runtime.async=false;runtime.onload=loaded;
    runtime.onerror=()=>{if(closed)error.classList.add('is-visible')};
    document.body.appendChild(runtime);

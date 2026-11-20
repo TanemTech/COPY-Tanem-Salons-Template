@@ -75,6 +75,20 @@ assert(unsafeErrors.some(error=>error.includes('booking method')),'production mo
 
 const ready=loadSiteData(path.join(root,'tests/fixtures/site-data.production.js'));
 assert.deepEqual(validateSiteData(ready,{rootDir:root,allowTestDomains:true}),[],'a complete production fixture must pass');
+const miscategorized=structuredClone(ready);
+const salonPhoto=miscategorized.media.gallery['Волосы'][0];
+miscategorized.media.gallery['Салон']=[salonPhoto];
+miscategorized.media.portfolio=[salonPhoto];
+assert(validateSiteData(miscategorized,{rootDir:root,allowTestDomains:true}).some(error=>error.startsWith('media.portfolio[0]:')),
+  'a salon photo cannot be a work preview even if listed under both groups');
+
+const splitLengths=structuredClone(ready);
+splitLengths.services.push(...['короткие волосы','длинные волосы','прикорневая'].map((label,index)=>({
+  ...ready.services[0],id:'perm-'+index,title:{...ready.services[0].title,ru:'Химическая завивка '+label}
+})));
+assert.equal(validateSiteData(splitLengths,{rootDir:root,allowTestDomains:true}).filter(error=>error.includes('group confirmed hair lengths')).length,1,
+  'different lengths of one procedure must be grouped without merging the root perm');
+
 
 // Gallery contract: every supplied photo must be accepted; there is no 25-photo ceiling.
 const galleryTestDir=fs.mkdtempSync(path.join(root,'.tmp-gallery-unlimited-'));
