@@ -36,7 +36,7 @@ def check_desktop(browser):
     expect_text(page.locator("#salonDesktopTeam .std-team-subtitle"), "Команда салона", "desktop empty team state")
     assert page.locator("#salonDesktopTeam .std-master.is-placeholder").count() == 4, "desktop empty team must keep four visual master cards"
     assert page.locator("#salonDesktopPortfolio").is_hidden()
-    expect_text(page.locator(".std-reviews-score strong"), "5", "desktop rating")
+    expect_text(page.locator(".std-reviews-score strong"), "5,0", "desktop rating")
     expect_text(page.locator(".std-review-meta").first, "Google", "desktop review source")
     assert page.locator(".std-phone").get_attribute("href") == "tel:+37410555555"
     page.locator("#stdHeaderBookBtn").click()
@@ -153,14 +153,105 @@ def check_wide_touch(browser):
     context.close()
 
 
+def check_eva_components(browser, mobile, width):
+    context = browser.new_context(viewport={"width": width, "height": 900},
+                                  is_mobile=mobile, has_touch=mobile, locale="ru-RU")
+    page = context.new_page()
+    # Use qualified relations. Other services in the same category must not
+    # leak into the specialist's price list or portfolio.
+    extra = """
+    (() => {
+      const s=window.TANEM_SITE_DATA;
+      const t=value=>({ru:value,en:value,hy:value});
+      const photos=Array.from({length:30},(_,i)=>({
+        src:'tests/fixtures/photo.svg?item='+i,alt:t('Работа '+(i+1))
+      }));
+      s.media.gallery={'Салон':photos.slice(0,4),'Волосы':photos.slice(4)};
+      s.media.portfolio=photos.slice(0,11);
+      s.services[2].variantType='length';
+      const linked=Array.from({length:6},(_,i)=>({
+        ...s.services[0],id:'linked-'+i,title:t('Подтверждённая процедура '+(i+1))
+      }));
+      s.services.push(...linked);
+      s.team=[{
+        id:'test-specialist',name:t('Нина'),role:t('Парикмахер'),about:t('Работает со стрижками.'),
+        photo:'tests/fixtures/photo.svg',categories:['Волосы'],
+        serviceIds:['care',...linked.map(service=>service.id)],work:photos.slice(4,15),
+        reviewIds:['review-anna']
+      }];
+    })();
+    """
+
+    def provide_linked_fixture(route):
+        response = route.fetch()
+        route.fulfill(response=response, body=response.text() + extra)
+
+    page.route("**/site-data.js?*", provide_linked_fixture)
+    root = "#salon-mobile" if mobile else "#salon-desktop-v1"
+    wait_for_app(page, root)
+    ru = '[data-lang="ru"]' if mobile else '[data-desktop-lang="ru"]'
+    en = '[data-lang="en"]' if mobile else '[data-desktop-lang="en"]'
+    page.locator(ru).first.click()
+    service_list = "#tn13Services" if mobile else "#stdServiceList"
+    option = page.locator(f'{service_list} [data-tanem-service-id="care"] summary')
+    assert option.inner_text() == "Стоимость по длине +"
+    option.click()
+    assert option.get_attribute("aria-expanded") == "true"
+    expect_text(page.locator(f'{service_list} .tanem-variant-duration').first, "45 мин", "variant duration")
+    booking = "#tn13BookSheet" if mobile else "#stdBookOverlay"
+    assert page.locator(booking + ".open").count() == 0
+    page.locator(en).first.click()
+    page.wait_for_function("""selector => document.querySelector(selector)?.textContent === 'Prices by hair length −'""",
+                           arg=f'{service_list} [data-tanem-service-id="care"] summary')
+    assert option.get_attribute("aria-expanded") == "true"
+    option.click()
+    assert option.get_attribute("aria-expanded") == "false"
+    page.locator(ru).first.click()
+    preview = "#tn13Portfolio .tn22-photo" if mobile else "#salonDesktopPortfolio .std-work"
+    assert page.locator(preview).count() == 7
+    page.locator('[data-mid="test-specialist"]' if mobile else '[data-desktop-master="test-specialist"]').click()
+    profile = ".tn22-master-page.open" if mobile else "#stdMasterOverlay.open"
+    panel = page.locator(profile)
+    panel.locator(".tanem-master-head h2").wait_for()
+    assert panel.locator(".tanem-master-price-list .tanem-service-card:visible").count() == 6
+    panel.locator("[data-master-expand]").click()
+    assert panel.locator(".tanem-master-price-list .tanem-service-card:visible").count() == 7
+    assert panel.locator('[data-tanem-service-id="haircut"]').count() == 0
+    assert panel.locator(".tanem-master-review").count() == 1
+    assert panel.locator("[data-master-work]").count() == (11 if mobile else 9)
+    panel.locator(".tanem-service-book").first.click()
+    page.locator(booking + ".open").wait_for()
+    page.locator("#tn13BookClose" if mobile else "#stdBookClose").click()
+    assert panel.count() == 1
+    panel.locator("[data-master-gallery]").click()
+    gallery = "#tn13Gallery.open" if mobile else "#stdGalleryBrowser.open"
+    items = "[data-gi]" if mobile else "[data-gallery-item]"
+    category = '[data-gcat="Волосы"]' if mobile else '[data-gallery-category="Волосы"]'
+    gallery_panel = page.locator(gallery)
+    gallery_panel.wait_for()
+    assert gallery_panel.locator(category).is_visible()
+    assert gallery_panel.locator(items).count() == 26
+    gallery_panel.locator(".tn22-gallery-back" if mobile else "#stdGalleryBrowserBack").click()
+    assert panel.count() == 1
+    panel.locator(".tn22-back" if mobile else "#stdMasterPageClose").click()
+    panel.wait_for(state="detached")
+    context.close()
+
+
 def main():
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch()
+        engine = os.environ.get("FACTORY_BROWSER", "chromium")
+        executable = os.environ.get("FACTORY_BROWSER_EXECUTABLE")
+        launch_options = {"executable_path": executable, "args": ["--disable-gpu"]} if executable else {}
+        browser = getattr(playwright, engine).launch(**launch_options)
         try:
             check_desktop(browser)
             check_desktop_long_brand(browser)
             check_mobile(browser)
             check_wide_touch(browser)
+            check_eva_components(browser, False, 1366)
+            check_eva_components(browser, True, 390)
+            check_eva_components(browser, True, 430)
         finally:
             browser.close()
     print("PASS: production data hydrates desktop, mobile, translations, booking, and wide touch")

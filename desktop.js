@@ -19,7 +19,7 @@
   const REVIEWS_URL=SITE.contacts.reviewsUrl||'#salonDesktopReviews';
   const DESKTOP_REAL_REVIEWS=SITE.reviews.map(review=>[russian(review.author),russian(review.text)]);
   const mediaItem=item=>({src:item.src,alt:russian(item.alt)});
-  const PORTFOLIO=SITE.media.portfolio.map(mediaItem);
+  const PORTFOLIO=SITE.media.portfolio.slice(0,SITE.mode==='production'?7:undefined).map(mediaItem);
   const DESKTOP_GALLERY_GROUPS=Object.fromEntries(
     Object.entries(SITE.media.gallery).map(([category,items])=>[
       category,items.map(mediaItem)
@@ -35,7 +35,7 @@
         russian(variant.price)
       ]);
       const tuple=[russian(service.title),russian(service.price),russian(service.duration),variants,russian(service.description)];
-      if(service.id==='mens-cut-long'||service.id==='mens-cut-color')tuple.push(service.id);
+      tuple.push(service.id);
       return tuple;
     })
   ]));
@@ -72,6 +72,7 @@
         <a href="#salonDesktopServices">Услуги</a>
         <a href="#salonDesktopPortfolio">Наши работы</a>
         <a href="#salonDesktopAbout">О нас</a>
+        ${TEAM_MASTERS.length?'<a href="#salonDesktopTeam">Команда</a>':''}
         <a href="#salonDesktopReviews">Отзывы</a>
         <a href="#salonDesktopContacts">Контакты</a>
       </nav>
@@ -429,7 +430,7 @@
   const bookBtn=document.getElementById('stdBookBtn');
   const bookOverlay=document.getElementById('stdBookOverlay');
   const openDesktopBooking=()=>{bookOverlay.classList.add('open');document.body.style.overflow='hidden'};
-  const closeDesktopBooking=()=>{bookOverlay.classList.remove('open');if(!document.querySelector('.std-gallery.open,.std-gallery-browser.open'))document.body.style.overflow=''};
+  const closeDesktopBooking=()=>{bookOverlay.classList.remove('open');if(!document.querySelector('.std-gallery.open,.std-gallery-browser.open,.std-master-overlay.open'))document.body.style.overflow=''};
   bookBtn.addEventListener('click',openDesktopBooking);
   const headerBookBtn=document.getElementById('stdHeaderBookBtn');
   if(headerBookBtn)headerBookBtn.addEventListener('click',openDesktopBooking);
@@ -498,16 +499,24 @@
   function openDesktopViewer(items,index=0,source='gallery'){
     galleryItems=Array.isArray(items)&&items.length?items:PORTFOLIO.slice();
     gallery.dataset.source=source;
-    galleryViewAll.hidden=source!=='portfolio';
+    galleryViewAll.hidden=source!=='portfolio'&&source!=='master';
     galleryIndex=Math.max(0,Math.min(index,galleryItems.length-1));
     paintGallery();
     gallery.classList.add('open');
     document.body.style.overflow='hidden';
   }
+  let masterGalleryContext=null;
+  document.addEventListener('tanem:open-master-gallery',event=>{
+    const {items,index,category,showGallery}=event.detail||{};
+    if(!Array.isArray(items)||!items.length)return;
+    masterGalleryContext={items,category};
+    if(showGallery)openDesktopGalleryBrowser(category);
+    else openDesktopViewer(items,index||0,'master');
+  });
   function closeDesktopViewer(){
     gallery.classList.remove('open');
     resetDesktopViewer();
-    if(!galleryBrowser.classList.contains('open'))document.body.style.overflow='';
+    if(!galleryBrowser.classList.contains('open')&&!document.querySelector('.std-master-overlay.open'))document.body.style.overflow='';
   }
   function moveDesktopGallery(step){
     if(galleryItems.length<2)return;
@@ -546,7 +555,7 @@
     if(item)warmGalleryImage(item.src);
   },{passive:true});
   function openDesktopGalleryBrowser(cat='Салон'){
-    galleryCategory=Object.prototype.hasOwnProperty.call(DESKTOP_GALLERY_GROUPS,cat)?cat:'Салон';
+    galleryCategory=Object.hasOwn(DESKTOP_GALLERY_GROUPS,cat)?cat:Object.keys(DESKTOP_GALLERY_GROUPS)[0];
     renderDesktopGalleryBrowser();
     galleryBrowser.classList.add('open');
     galleryBrowser.scrollTop=0;
@@ -554,7 +563,7 @@
   }
   function closeDesktopGalleryBrowser(){
     galleryBrowser.classList.remove('open');
-    if(!gallery.classList.contains('open'))document.body.style.overflow='';
+    if(!gallery.classList.contains('open')&&!document.querySelector('.std-master-overlay.open'))document.body.style.overflow='';
   }
 
   document.querySelectorAll('.std-work').forEach(btn=>{
@@ -567,7 +576,11 @@
   document.getElementById('stdGalleryClose').addEventListener('click',closeDesktopViewer);
   document.getElementById('stdGalleryPrev').addEventListener('click',()=>moveDesktopGallery(-1));
   document.getElementById('stdGalleryNext').addEventListener('click',()=>moveDesktopGallery(1));
-  galleryViewAll.addEventListener('click',()=>{closeDesktopViewer();openDesktopGalleryBrowser('Ногти')});
+  galleryViewAll.addEventListener('click',()=>{
+    const category=gallery.dataset.source==='master'?masterGalleryContext?.category:'Ногти';
+    closeDesktopViewer();
+    openDesktopGalleryBrowser(category);
+  });
   gallery.addEventListener('click',e=>{if(e.target===gallery)closeDesktopViewer()});
 
   galleryStage.addEventListener('wheel',e=>{
@@ -689,6 +702,12 @@
       '<span class="dct-money-symbol">'+m[3]+'</span>';
   }
 
+  const serviceById=new Map(SITE.services.map(service=>[service.id,service]));
+  function clientServiceCard(item){
+    const service=serviceById.get(item[5]);
+    return SITE.mode==='production'&&service?window.TANEM_SERVICES.render(service,'desktop'):templateServiceCard(item);
+  }
+
   function templateServiceCard(item){
     const title=item[0];
     const price=item[1]||'';
@@ -799,7 +818,7 @@
       const heading=activeServiceCategory==='Все'
         ? '<div class="dct-service-category-heading"><span>'+group.label+'</span><i aria-hidden="true"></i></div>'
         : '';
-      return '<section class="dct-service-category">'+heading+'<div class="dct-service-category-list">'+group.services.map(templateServiceCard).join('')+'</div></section>';
+      return '<section class="dct-service-category">'+heading+'<div class="dct-service-category-list">'+group.services.map(clientServiceCard).join('')+'</div></section>';
     }).join('');
 
     bindDesktopServiceControls(serviceList);
@@ -825,6 +844,7 @@
   }
 
   function bindDesktopServiceControls(scope){
+    window.TANEM_SERVICES.enhance(scope);
     scope.querySelectorAll('[data-service-book]').forEach(btn=>btn.onclick=openDesktopBooking);
     scope.querySelectorAll('[data-service-details]').forEach(btn=>btn.onclick=()=>{
       const card=btn.closest('.is-demo-expandable');
@@ -910,7 +930,7 @@
       shown-=already;
       const extra=group.services.slice(already);
       if(!extra.length)return;
-      const cards=extra.map(templateServiceCard).join('');
+      const cards=extra.map(clientServiceCard).join('');
       if(already){
         sections.push('<div class="dct-service-category-list dct-service-extra-cards">'+cards+'</div>');
       }else{
@@ -1004,6 +1024,12 @@
         };
       }
     }
+    if(duration)window.setTimeout(()=>{
+      if(anchorToken!==desktopMoreAnchorRun)return;
+      if(desktopServicesExpanded&&desktopMoreWrap)desktopMoreWrap.style.height='auto';
+      else if(desktopMoreWrap){desktopMoreWrap.remove();desktopMoreWrap=null;stabilizeDesktopMoreButton(anchorTop)}
+      unlockServiceScrollAnchor();
+    },duration+80);
   };
   renderDesktopServices();
 
@@ -1237,7 +1263,7 @@
     ["15 000 ₽","15 000 ₽","15 000 ₽"],
     ["от 6 000 ₽","from 6 000 ₽","from 6 000 ₽"],
     ['Услуги','Ծառայություններ','Services'],['Наши работы','Մեր աշխատանքները','Our work'],['О нас','Մեր մասին','About us'],
-    ['Отзывы','Կարծիքներ','Reviews'],['Контакты','Կոնտակտներ','Contacts'],['Салон красоты','Գեղեցկության սրահ','Beauty salon'],
+    ['Команда','Թիմ','Team'],['Отзывы','Կարծիքներ','Reviews'],['Контакты','Կոնտակտներ','Contacts'],['Салон красоты','Գեղեցկության սրահ','Beauty salon'],
     ['Ваша красота. Ваша уверенность.','Ձեր գեղեցկությունը։ Ձեր վստահությունը։','Your beauty. Your confidence.'],
     ['Салон красоты в самом сердце Города.','Գեղեցկության սրահ Քաղաքի սրտում։','A beauty salon in the heart of City.'],['Листайте вниз','Սահեցրեք ներքև','Scroll down'],['Город,','Քաղաք,','City,'],['Адрес салона','Սրահի հասցե','Адрес салона'],
     ['Записаться','Ամրագրել','Book now'],['Записаться →','Ամրագրել →','Book now →'],['Записаться онлайн','Ամրագրել առցանց','Book online'],['Смотреть работы','Դիտել աշխատանքները','View our work'],
@@ -1337,7 +1363,7 @@
   function desktopSkipText(node){
     const el=node.parentElement;
     if(!el)return true;
-    if(el.closest('.std-lang-switch,.std-review-text'))return true;
+    if(el.closest('.std-lang-switch,.std-review-text,.tanem-service-card,.tanem-master-head,.tanem-master-sections,.tanem-master-jump'))return true;
     return /^(SCRIPT|STYLE|NOSCRIPT)$/.test(el.tagName);
   }
   function translateDesktopTree(scope,lang=currentDesktopLang){

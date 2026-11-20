@@ -53,6 +53,7 @@ jobs:
           fi
           node tests/validate-site-data.cjs tests/fixtures/site-data.production.js --production
           node tests/check-factory-contract.cjs
+          node tests/check-intake.cjs
 
   visual-regression:
     needs: compare-to-approved-template
@@ -161,6 +162,7 @@ jobs:
           cp tests/fixtures/site-data.production.js /tmp/salon-production-webkit/site-data.js
           python -m http.server 4175 --bind 127.0.0.1 --directory /tmp/salon-production-webkit > /tmp/salon-production-webkit.log 2>&1 &
           sleep 2
+          FACTORY_BROWSER=webkit python tests/factory_browser.py
           CLIENT_SITE_URL=http://127.0.0.1:4175 python tests/client_smoke.py --engine webkit
       - name: Attach WebKit comparison snapshots
         if: always()
