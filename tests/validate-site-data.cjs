@@ -156,6 +156,11 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
       const wanted=country==='RU'?'yandex':'google';
       if(data.contacts.mapUrl&&!providerOk(data.contacts.mapUrl,wanted))add('contacts.mapUrl',`country ${country} must use ${wanted==='yandex'?'Yandex Maps':'Google Maps'}`);
       if(data.contacts.mapEmbedUrl&&!providerOk(data.contacts.mapEmbedUrl,wanted))add('contacts.mapEmbedUrl',`country ${country} must embed ${wanted==='yandex'?'Yandex Maps':'Google Maps'}`);
+      if(country==='RU'&&data.contacts.mapEmbedUrl&&providerOk(data.contacts.mapEmbedUrl,wanted)){
+        const embed=new URL(data.contacts.mapEmbedUrl);
+        if(!/^\/map-widget(?:\/|$)/.test(embed.pathname))
+          add('contacts.mapEmbedUrl','use the Yandex Maps widget URL (map-widget), not the route URL');
+      }
       if(data.contacts.messengerUrl){
         const label=typeof data.contacts.messengerLabel==='object'?String(data.contacts.messengerLabel.ru||'').trim():String(data.contacts.messengerLabel||'').trim();
         if(!label||/^(?:Написать|Мессенджер|Message|Write)$/iu.test(label))add('contacts.messengerLabel','must name the actual messenger platform, for example Telegram, WhatsApp, MAX or Viber');
@@ -188,6 +193,7 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
   }
 
   const serviceIds=new Set();
+  const lengthGroups=new Map();
   if(array(data.services,'services')){
     if(production&&!data.services.length)add('services','must contain at least one service');
     data.services.forEach((service,index)=>{
@@ -199,6 +205,17 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
       if(!categories.has(service.category))add(`${field}.category`,'must exist in categoryLabels');
       if(!data.categoryOrder?.includes(service.category))add(`${field}.category`,'must also exist in categoryOrder');
       local(service.title,`${field}.title`,{required:true});
+      if(production){
+        const title=(typeof service.title==='string'?service.title:service.title?.ru)||'';
+        const length=title.toLowerCase().trim().match(/^(.+?)[\s(–—-]+(короткие|средние|длинные) волосы\)?$/u);
+        if(length){
+          const key=JSON.stringify([service.category,length[1].trim().replace(/\s+/g,' ')]);
+          const previous=lengthGroups.get(key);
+          if(previous&&previous.length!==length[2])
+            add(`${field}.title`,`group confirmed hair lengths under one service with variants (see services[${previous.index}])`);
+          if(!previous)lengthGroups.set(key,{length:length[2],index});
+        }
+      }
       local(service.price,`${field}.price`);
       local(service.duration,`${field}.duration`);
       local(service.description,`${field}.description`);
@@ -226,11 +243,22 @@ function validateSiteData(data,{rootDir=process.cwd(),allowTestDomains=false}={}
     }
     if(array(data.media.portfolio,'media.portfolio'))data.media.portfolio.forEach((item,index)=>{media(item,`media.portfolio[${index}]`,{required:true});if(item?.alt)local(item.alt,`media.portfolio[${index}].alt`,{required:production})});
     const gallerySources=new Set();
+    const salonSources=new Set();
+    const workSources=new Set();
     if(object(data.media.gallery,'media.gallery'))for(const [group,items] of Object.entries(data.media.gallery))if(array(items,`media.gallery.${group}`))items.forEach((item,index)=>{
       media(item,`media.gallery.${group}[${index}]`,{required:true});
       if(item?.alt)local(item.alt,`media.gallery.${group}[${index}].alt`,{required:production});
       const source=typeof item==='string'?item:item?.src;
-      if(typeof source==='string'&&source.trim())gallerySources.add(source.trim());
+      if(typeof source==='string'&&source.trim()){
+        const src=source.trim();
+        gallerySources.add(src);
+        (group.trim().toLowerCase()==='салон'?salonSources:workSources).add(src);
+      }
+    });
+    if(production&&Array.isArray(data.media.portfolio))data.media.portfolio.forEach((item,index)=>{
+      const src=typeof item==='string'?item.trim():item?.src?.trim?.();
+      if(!workSources.has(src)||salonSources.has(src))
+        add(`media.portfolio[${index}]`,'must be a work photo from a gallery category other than Салон');
     });
     if(production&&gallerySources.size<1)add('media.gallery','must contain at least one real gallery-XX.webp photo');
   }

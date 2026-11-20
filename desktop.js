@@ -18,13 +18,16 @@
   const MESSENGER_URL=SITE.contacts.messengerUrl||'#salonDesktopContacts';
   const REVIEWS_URL=SITE.contacts.reviewsUrl||'#salonDesktopReviews';
   const DESKTOP_REAL_REVIEWS=SITE.reviews.map(review=>[russian(review.author),russian(review.text)]);
-  const mediaItem=item=>({src:item.src,alt:russian(item.alt)});
-  const PORTFOLIO=SITE.media.portfolio.slice(0,SITE.mode==='production'?7:undefined).map(mediaItem);
+  const mediaItem=item=>typeof item==='string'?{src:item,alt:''}:{src:item.src,alt:russian(item.alt)};
+  const PORTFOLIO=(window.TANEM_PORTFOLIO_PREVIEW??SITE.media.portfolio).map(mediaItem);
   const DESKTOP_GALLERY_GROUPS=Object.fromEntries(
     Object.entries(SITE.media.gallery).map(([category,items])=>[
       category,items.map(mediaItem)
     ])
   );
+  const worksCategory=SITE.mode==='production'
+    ? Object.keys(DESKTOP_GALLERY_GROUPS).find(cat=>cat.trim().toLowerCase()!=='салон')
+    : 'Ногти';
   const SERVICE_CATEGORIES=SITE.categoryOrder.filter(category=>SITE.services.some(service=>service.category===category));
   const SERVICE_DATA=Object.fromEntries(SERVICE_CATEGORIES.map(category=>[
     category,
@@ -237,12 +240,12 @@
           <p class="std-team-subtitle">${TEAM_MASTERS.length?'Нажмите на мастера, чтобы открыть страницу специалиста.':'Команда салона'}</p>
           <div class="std-team-track" id="stdTeamTrack">
             ${DISPLAY_TEAM_MASTERS.map(master=>master.placeholder?`
-              <div class="std-master is-placeholder">
+              <${SITE.mode==='production'?'button type="button" data-empty-master="'+master.id+'"':'div'} class="std-master is-placeholder">
                 <div class="std-master-avatar">${teamAvatar(master)}</div>
                 <strong class="std-master-name">Мастер</strong>
                 <span class="std-master-role"></span>
                 <span class="std-master-cats"></span>
-              </div>
+              </${SITE.mode==='production'?'button':'div'}>
             `:`
               <button class="std-master" type="button" data-desktop-master="${master.id}">
                 <div class="std-master-avatar">${teamAvatar(master)}</div>
@@ -569,15 +572,15 @@
   document.querySelectorAll('.std-work').forEach(btn=>{
     btn.addEventListener('click',()=>openDesktopViewer(PORTFOLIO,Number(btn.dataset.portfolioIndex)||0,'portfolio'));
   });
-  document.getElementById('stdOpenGallery').addEventListener('click',()=>openDesktopGalleryBrowser('Ногти'));
-  document.getElementById('stdStickyGalleryOpen')?.addEventListener('click',()=>openDesktopGalleryBrowser('Ногти'));
-  document.getElementById('stdViewWorks')?.addEventListener('click',e=>{e.preventDefault();openDesktopGalleryBrowser('Ногти')});
+  document.getElementById('stdOpenGallery').addEventListener('click',()=>openDesktopGalleryBrowser(worksCategory));
+  document.getElementById('stdStickyGalleryOpen')?.addEventListener('click',()=>openDesktopGalleryBrowser(worksCategory));
+  document.getElementById('stdViewWorks')?.addEventListener('click',e=>{e.preventDefault();openDesktopGalleryBrowser(worksCategory)});
   document.getElementById('stdGalleryBrowserBack').addEventListener('click',closeDesktopGalleryBrowser);
   document.getElementById('stdGalleryClose').addEventListener('click',closeDesktopViewer);
   document.getElementById('stdGalleryPrev').addEventListener('click',()=>moveDesktopGallery(-1));
   document.getElementById('stdGalleryNext').addEventListener('click',()=>moveDesktopGallery(1));
   galleryViewAll.addEventListener('click',()=>{
-    const category=gallery.dataset.source==='master'?masterGalleryContext?.category:'Ногти';
+    const category=gallery.dataset.source==='master'?masterGalleryContext?.category:worksCategory;
     closeDesktopViewer();
     openDesktopGalleryBrowser(category);
   });
@@ -670,7 +673,9 @@
   });
 
   const SERVICE_PREVIEW_LIMIT=8;
-  let activeServiceCategory='Все';
+  const DESKTOP_SERVICE_TABS=SITE.mode==='production'&&SITE.services.length>35
+    ? SERVICE_CATEGORIES : ['Все',...SERVICE_CATEGORIES];
+  let activeServiceCategory=DESKTOP_SERVICE_TABS[0];
   let desktopServicesExpanded=false;
   let desktopServiceLanguageReady=false;
   const serviceTabs=document.getElementById('stdServiceTabs');
@@ -678,7 +683,6 @@
   const serviceMore=document.getElementById('stdServiceMore');
   const serviceMoreText=document.getElementById('stdServiceMoreText');
   const serviceMoreTextMobile=document.getElementById('stdServiceMoreTextMobile');
-  const DESKTOP_SERVICE_TABS=['Все',...SERVICE_CATEGORIES];
 
   function desktopServiceWord(n){
     const n10=n%10,n100=n%100;
@@ -1220,7 +1224,7 @@
   function openDesktopMaster(master){
     activeDesktopMaster=master;
     activeDesktopMasterTab='Профиль';
-    paintDesktopMaster(master);
+    if(!master.placeholder)paintDesktopMaster(master);
     masterOverlay.classList.add('open');
     masterOverlay.scrollTop=0;
     document.body.style.overflow='hidden';
@@ -1233,6 +1237,9 @@
   document.querySelectorAll('[data-desktop-master]').forEach(btn=>btn.addEventListener('click',()=>{
     const master=TEAM_MASTERS.find(item=>item.id===btn.dataset.desktopMaster);
     if(master)openDesktopMaster(master);
+  }));
+  document.querySelectorAll('[data-empty-master]').forEach(btn=>btn.addEventListener('click',()=>{
+    openDesktopMaster(DISPLAY_TEAM_MASTERS.find(item=>item.id===btn.dataset.emptyMaster));
   }));
   masterPageClose.addEventListener('click',closeDesktopMaster);
   masterOverlay.addEventListener('click',e=>{if(e.target===masterOverlay)closeDesktopMaster()});

@@ -2,11 +2,11 @@
   'use strict';
   const data=global.TANEM_SITE_DATA;
   const labels={
-    ru:{book:'Записаться',options:'Варианты и цены',length:'Стоимость по длине',more:'Подробнее',less:'Свернуть',min:'мин',hour:'ч'},
-    en:{book:'Book',options:'Options and prices',length:'Prices by hair length',more:'Read more',less:'Collapse',min:'min',hour:'h'},
-    hy:{book:'Ամրագրել',options:'Տարբերակներ և գներ',length:'Գներն ըստ երկարության',more:'Մանրամասն',less:'Փակել',min:'ր.',hour:'ժ.'},
-    uz:{book:'Yozilish',options:'Variantlar va narxlar',length:'Uzunlik bo‘yicha narxlar',more:'Batafsil',less:'Yig‘ish',min:'daq',hour:'soat'},
-    tg:{book:'Сабт шудан',options:'Вариантҳо ва нархҳо',length:'Нарх аз рӯи дарозӣ',more:'Муфассал',less:'Пӯшидан',min:'дақ',hour:'соат'}
+    ru:{book:'Записаться',options:'Варианты и цены',more:'Подробнее',less:'Свернуть',min:'мин',hour:'ч'},
+    en:{book:'Book',options:'Options and prices',more:'Read more',less:'Collapse',min:'min',hour:'h'},
+    hy:{book:'Ամրագրել',options:'Տարբերակներ և գներ',more:'Մանրամասն',less:'Փակել',min:'ր.',hour:'ժ.'},
+    uz:{book:'Yozilish',options:'Variantlar va narxlar',more:'Batafsil',less:'Yig‘ish',min:'daq',hour:'soat'},
+    tg:{book:'Сабт шудан',options:'Вариантҳо ва нархҳо',more:'Муфассал',less:'Пӯшидан',min:'дақ',hour:'соат'}
   };
   const words=lang=>labels[lang]||labels.ru;
   const localize=(value,lang)=>typeof value==='string'?value:(value?.[lang]??value?.ru??value?.en??'');
@@ -34,9 +34,20 @@
     if(single&&device==='mobile')return '<span class="tanem-service-price"><span class="tanem-price-amount">'+(single[1]?'<small>'+escape(single[1])+' </small>':'')+escape(single[2].trim())+'</span><span class="tanem-price-currency">'+single[3]+'</span></span>';
     return '<span class="tanem-service-price">'+escape(price)+'</span>';
   }
+  function lengthPrice(variants,lang){
+    if(variants.length<2)return '';
+    const prices=variants.map(variant=>normalizePrice(localize(variant.price,lang)).match(/^([\d ]+)\s*([₽֏€$£])$/u));
+    const currency=prices[0]?.[2];
+    if(!currency||!prices.every(price=>price?.[2]===currency))return '';
+    const amounts=prices.map(price=>Number(price[1].replace(/ /g,'')));
+    const format=amount=>String(amount).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+    const low=Math.min(...amounts),high=Math.max(...amounts);
+    return format(low)+(high===low?'':'–'+format(high))+' '+currency;
+  }
   function render(service,device,lang=language()){
     const title=localize(service.title,lang).replace(/\u00ad/g,''),variants=(service.variants||[]).filter(v=>localize(v.label,lang)||localize(v.price,lang)||localize(v.duration,lang));
-    const copy=description(service,lang),price=localize(service.price,lang),time=duration(service.duration,lang);
+    const range=service.variantType==='length'?lengthPrice(variants,lang):'';
+    const copy=description(service,lang),price=range||localize(service.price,lang),time=duration(service.duration,lang);
     const id='service-description-'+device+'-'+(service.profileId||'catalogue')+'-'+service.id;
     const copyLabels=words(lang),book=copyLabels.book;
     const tariffRows=variants.map(variant=>{
@@ -47,7 +58,7 @@
         (price?'<span>'+escape(price)+'</span>':'')+'</dd></div>';
     }).join('');
     const tariffs=tariffRows?'<dl class="tanem-service-tariffs">'+tariffRows+'</dl>':'';
-    const optionsLabel=service.variantType==='length'?copyLabels.length:copyLabels.options;
+    const optionsLabel=copyLabels.options;
     const options=variants.length?'<details class="tanem-service-options"><summary><span class="tanem-options-label">'+escape(optionsLabel)+' +</span></summary><div class="tanem-options-panel">'+tariffs+'</div></details>':'';
     const prose=copy?'<div class="tanem-service-description"><p id="'+escape(id)+'">'+escape(copy)+'</p><button class="tanem-service-more" type="button" aria-expanded="false" aria-controls="'+escape(id)+'">'+copyLabels.more+'</button></div>':'';
     return '<article class="'+(device==='desktop'?'dct-service-card':'tn31-service-row')+' tanem-service-card" data-tanem-service-id="'+escape(service.id)+'" data-tanem-profile="'+escape(service.profileId||'catalogue')+'" data-tanem-layout="'+device+'" data-tanem-lang="'+lang+'">'+
