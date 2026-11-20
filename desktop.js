@@ -72,7 +72,7 @@
         <a href="#salonDesktopServices">Услуги</a>
         <a href="#salonDesktopPortfolio">Наши работы</a>
         <a href="#salonDesktopAbout">О нас</a>
-        ${TEAM_MASTERS.length?'<a href="#salonDesktopTeam">Команда</a>':''}
+        ${SITE.mode==='production'&&TEAM_MASTERS.length?'<a href="#salonDesktopTeam">Команда</a>':''}
         <a href="#salonDesktopReviews">Отзывы</a>
         <a href="#salonDesktopContacts">Контакты</a>
       </nav>
