@@ -15,6 +15,10 @@ def expect_text(locator, expected, label):
 
 def wait_for_app(page, root):
     errors = []
+    # Keep the map link and iframe URL in the fixture without relying on
+    # a live third-party frame for application error assertions.
+    page.route("https://www.google.com/maps?**",
+               lambda route: route.fulfill(status=200, content_type="text/html", body=""))
     page.on("pageerror", lambda error: errors.append(str(error)))
     page.goto(BASE_URL, wait_until="domcontentloaded")
     page.wait_for_selector(root, state="visible", timeout=10_000)
