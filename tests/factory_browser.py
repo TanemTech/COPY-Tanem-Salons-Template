@@ -2,7 +2,7 @@
 """Browser contract for a fully populated production configuration."""
 
 import os
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 
 BASE_URL = os.environ.get("FACTORY_SITE_URL", "http://127.0.0.1:4175")
@@ -194,15 +194,14 @@ def check_eva_components(browser, mobile, width):
     page.locator(ru).first.click()
     service_list = "#tn13Services" if mobile else "#stdServiceList"
     option = page.locator(f'{service_list} [data-tanem-service-id="care"] summary')
-    assert option.inner_text() == "Стоимость по длине +"
+    expect(option.locator(".tanem-options-label")).to_have_text("Стоимость по длине +")
     option.click()
     assert option.get_attribute("aria-expanded") == "true"
     expect_text(page.locator(f'{service_list} .tanem-variant-duration').first, "45 мин", "variant duration")
     booking = "#tn13BookSheet" if mobile else "#stdBookOverlay"
     assert page.locator(booking + ".open").count() == 0
     page.locator(en).first.click()
-    page.wait_for_function("""selector => document.querySelector(selector)?.textContent === 'Prices by hair length −'""",
-                           arg=f'{service_list} [data-tanem-service-id="care"] summary')
+    expect(option.locator(".tanem-options-label")).to_have_text("Prices by hair length −")
     assert option.get_attribute("aria-expanded") == "true"
     option.click()
     assert option.get_attribute("aria-expanded") == "false"
